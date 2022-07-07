@@ -27,7 +27,7 @@ nba_adv_stats <- nba_adv_stats %>%
 
 
 # Write adv_stats to csv
-write_csv(nba_adv_stats, "data/nba_adv_stats.csv")
+# write_csv(nba_adv_stats, "data/nba_adv_stats.csv")
 
 
 # Create per 100 poss Dataset 1997-2022 -----------------------------------
@@ -47,5 +47,5 @@ nba_per100_stats <- nba_per100_stats %>%
   dplyr::select(-c(x, rk))
 
 # Write csv
-write_csv(nba_per100_stats, "data/nba_per100_stats.csv")
+# write_csv(nba_per100_stats, "data/nba_per100_stats.csv")
 

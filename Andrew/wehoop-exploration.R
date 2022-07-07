@@ -1,8 +1,5 @@
 # PURPOSE: Initial Exploration of wehoop and ballr package
 
-
-
-
 library(wehoop)
 library(tidyverse)
 
