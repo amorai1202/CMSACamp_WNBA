@@ -49,3 +49,126 @@ nba_per100_stats <- nba_per100_stats %>%
 # Write csv
 # write_csv(nba_per100_stats, "data/nba_per100_stats.csv")
 
+
+
+
+
+# Writing a function to grab shooting data --------------------------------
+
+NBAPerGameShooting <- function(season = 2018) {
+  nba_url <- paste(getOption("NBA_api_base"),
+                   "/leagues/NBA_",
+                   season,
+                   "_shooting.html",
+                   sep = "")
+  pg <- xml2::read_html(nba_url)
+  
+  nba_stats <- rvest::html_table(pg, fill = T)[[1]]
+  
+  if (utils::packageVersion("janitor") > "0.3.1") {
+    nba_stats <- nba_stats %>%
+      janitor::clean_names(case = "old_janitor") %>%
+      dplyr::filter(.data$x_2 != "Player") %>%
+      rename(rk = 1,
+             player = 2,
+             pos = 3,
+             age = 4,
+             tm = 5, 
+             g = 6,
+             mp = 7,
+             fgpercent = 8,
+             distance = 9,
+             fga_2p = 11,
+             fga_0_3 = 12,
+             fga_3_10 = 13,
+             fga_10_16 = 14,
+             fga_16_3p = 15,
+             fga_3p = 16,
+             fg_2p = 18,
+             fg_0_3 = 19,
+             fg_3_10 = 20,
+             fg_10_16 = 21,
+             fg_16_3p = 22,
+             fg_3p = 23,
+             fg_2p_asst = 25,
+             fg_3p_asst = 26,
+             dunks_attempt = 28,
+             dunks_total = 29,
+             corner_3s_attempt = 31,
+             corner_3s_percent = 32,
+             heaves_attempts = 34,
+             heaves_makes = 35
+             )
+      
+  } else {
+    nba_stats <- nba_stats %>%
+      janitor::clean_names() %>%
+      janitor::remove_empty_cols() %>%
+      dplyr::filter(.data$x_2 != "Player") %>%
+      rename(rk = 1,
+             player = 2,
+             pos = 3,
+             age = 4,
+             tm = 5, 
+             g = 6,
+             mp = 7,
+             fgpercent = 8,
+             distance = 9,
+             fga_2p = 11,
+             fga_0_3 = 12,
+             fga_3_10 = 13,
+             fga_10_16 = 14,
+             fga_16_3p = 15,
+             fga_3p = 16,
+             fg_2p = 18,
+             fg_0_3 = 19,
+             fg_3_10 = 20,
+             fg_10_16 = 21,
+             fg_16_3p = 22,
+             fg_3p = 23,
+             fg_2p_asst = 25,
+             fg_3p_asst = 26,
+             dunks_attempt = 28,
+             dunks_total = 29,
+             corner_3s_attempt = 31,
+             corner_3s_percent = 32,
+             heaves_attempts = 34,
+             heaves_makes = 35
+      )
+  }
+  
+  links <- pg %>%
+    rvest::html_nodes("tr.full_table") %>%
+    rvest::html_nodes("a") %>%
+    rvest::html_attr("href")
+  
+  link_names <- pg %>%
+    rvest::html_nodes("tr.full_table") %>%
+    rvest::html_nodes("a") %>%
+    rvest::html_text()
+  
+  links_df <- dplyr::tibble(player = as.character(link_names),
+                                link   = as.character(links))
+  links_df[] <- lapply(links_df, as.character)
+  nba_stats <- dplyr::left_join(nba_stats, links_df, by = "player")
+  nba_stats <- dplyr::mutate_at(nba_stats,
+                                dplyr::vars(-.data$player, -.data$pos, -.data$tm, -.data$link),
+                                dplyr::funs(as.numeric))
+  return(nba_stats)
+}
+NBAPerGameShooting()
+
+nba_shooting <- tibble()
+for (i in 1997:2022){
+  temp <- NBAPerGameShooting(season = i) %>%
+    mutate(season = i)
+  nba_shooting <- bind_rows(nba_shooting, temp)
+}
+
+# Get rid of filler NA columns from html formatting
+nba_shooting <- nba_shooting %>%
+  select(-starts_with("x"))
+
+# Write csv
+# write_csv(nba_shooting, "data/nba_shooting.csv")
+
