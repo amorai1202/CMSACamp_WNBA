@@ -5,6 +5,7 @@
 # Load in data ------------------------------------------------------------
 
 library(ballr)
+library(rvest)
 library(tidyverse)
 
 
@@ -259,3 +260,103 @@ wnba_shooting <- wnba_shooting %>%
 
 # Write csv
 # write_csv(wnba_shooting, "data/wnba_shooting.csv")
+
+
+
+
+# Function to pull PBP data -----------------------------------------------
+
+WNBAPlayByPlay <- function(season = 2018) {
+  wnba_url <- paste("https://www.basketball-reference.com/wnba/years/",
+                    season,
+                    "_play_by_play.html",
+                    sep = "")
+  pg <- xml2::read_html(wnba_url)
+  
+  wnba_stats <- rvest::html_table(pg, fill = T)[[1]]
+  
+  if (utils::packageVersion("janitor") > "0.3.1") {
+    wnba_stats <- wnba_stats %>%
+      janitor::clean_names(case = "old_janitor") %>%
+      janitor::remove_empty("cols") %>%
+      dplyr::filter(.data$x != "Player") 
+
+  } else {
+    wnba_stats <- wnba_stats %>%
+      janitor::clean_names() %>%
+      janitor::remove_empty("cols") %>%
+      dplyr::filter(.data$x != "Player") 
+  }
+  
+  #Grabbing column names from html table  
+  
+  vec <-  pg %>%
+      rvest::html_nodes(xpath = '//*[@id="pbp"]/thead/tr[2]') %>%
+      rvest::html_text2() %>%
+      str_split(pattern = '\t')
+    
+  vec <- vec[[1]]
+  
+  col_names <- vec[vec!=" " & vec!= ""]
+  
+  #Renaming columns to avoid duplicates and messy col names
+  
+  col_names[6] <- "G2"
+  col_names[7] <- "MP2"
+  col_names[9] <- "On_Off"
+  col_names[12] <- "Shoot_fouls_committed"
+  col_names[13] <- "Off_fouls_committed"
+  col_names[14] <- "Shoot_fouls_drawn"
+  col_names[15] <- "Off_fouls_drawn"
+
+  # Assigning lower case column names to match other formats
+  colnames(wnba_stats) <- str_to_lower(col_names)
+  
+  #Removing duplicate columns
+  wnba_stats <- wnba_stats %>%
+    select(1:5, 7:18)
+
+  # Grabbing player links
+  links <- pg %>%
+    rvest::html_nodes("tr.full_table") %>%
+    rvest::html_nodes("a") %>%
+    rvest::html_attr("href")
+  
+  link_names <- pg %>%
+    rvest::html_nodes("tr.full_table") %>%
+    rvest::html_nodes("a") %>%
+    rvest::html_text()
+  
+  links_df <- dplyr::tibble(player = as.character(link_names),
+                            link   = as.character(links))
+  links_df[] <- lapply(links_df, as.character)
+  wnba_stats <- dplyr::left_join(wnba_stats, links_df, by = "player")
+  wnba_stats <- dplyr::mutate_at(wnba_stats,
+                                 dplyr::vars(-.data$player, -.data$pos, -.data$team, -.data$link),
+                                 dplyr::funs(as.numeric))
+  return(wnba_stats)
+}
+
+
+# Compiling all available play-by-play data
+# Only goes back to 2018
+wnba_pbp <- tibble()
+
+for (i in 2018:2022){
+  temp <- WNBAPlayByPlay(season = i) %>%
+    mutate(season = i)
+  wnba_pbp <- bind_rows(wnba_pbp, temp)
+}
+
+# Brief cleaning to lineup with nba datasets
+
+wnba_pbp <- wnba_pbp %>%
+  rename(tm = "team")
+
+# Write csv
+#write_csv(wnba_pbp, "data/wnba_pbp.csv")
+
+
+
+
+

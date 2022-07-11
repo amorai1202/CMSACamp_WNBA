@@ -47,3 +47,11 @@ for (i in 1997:2022){
     mutate(season = i)
   nba_adv_stats <- bind_rows(nba_adv_stats, temp)
 }
+
+
+
+# Play type data
+
+wehoop::espn_wnba_game_all(401244185)[[1]] %>% view()
+
+load_wnba_pbp(seasons = c(2018, 2019))

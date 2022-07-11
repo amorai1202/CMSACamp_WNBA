@@ -172,3 +172,83 @@ nba_shooting <- nba_shooting %>%
 # Write csv
 # write_csv(nba_shooting, "data/nba_shooting.csv")
 
+
+
+# Function to pull PBP data -----------------------------------------------
+
+NBAPlayByPlay <- function(season = 2018) {
+  nba_url <- paste(getOption("NBA_api_base"),
+                   "/leagues/NBA_",
+                    2018,
+                    "_play-by-play.html",
+                    sep = "")
+  pg <- xml2::read_html(nba_url)
+  
+  nba_stats <- rvest::html_table(pg, fill = T)[[1]]
+  
+  if (utils::packageVersion("janitor") > "0.3.1") {
+    nba_stats <- nba_stats %>%
+      janitor::clean_names(case = "old_janitor") %>%
+      janitor::remove_empty("cols") %>%
+      dplyr::filter(.data$x_2 != "Player") 
+    
+  } else {
+    nba_stats <- nba_stats %>%
+      janitor::clean_names() %>%
+      janitor::remove_empty("cols") %>%
+      dplyr::filter(.data$x_2 != "Player") 
+  }
+  
+  #Grabbing column names from html table  
+  
+  vec <-  pg %>%
+    rvest::html_nodes(xpath = '//*[@id="pbp_stats"]/thead/tr[2]') %>%
+    rvest::html_text2() %>%
+    str_split(pattern = '\t')
+  
+  vec <- vec[[1]]
+  
+  col_names <- vec[vec!=" " & vec!= ""]
+  
+  #Renaming columns to avoid duplicates and messy col names
+  
+  col_names[14] <- "On_Off"
+  col_names[17] <- "Shoot_fouls_committed"
+  col_names[18] <- "Off_fouls_committed"
+  col_names[19] <- "Shoot_fouls_drawn"
+  col_names[20] <- "Off_fouls_drawn"
+  
+  # Assigning lower case column names to match other formats
+  colnames(nba_stats) <- str_to_lower(col_names)
+  
+  # Grabbing player links
+  links <- pg %>%
+    rvest::html_nodes("tr.full_table") %>%
+    rvest::html_nodes("a") %>%
+    rvest::html_attr("href")
+  
+  link_names <- pg %>%
+    rvest::html_nodes("tr.full_table") %>%
+    rvest::html_nodes("a") %>%
+    rvest::html_text()
+  
+  links_df <- dplyr::tibble(player = as.character(link_names),
+                            link   = as.character(links))
+  links_df[] <- lapply(links_df, as.character)
+  nba_stats <- dplyr::left_join(nba_stats, links_df, by = "player")
+  nba_stats <- dplyr::mutate_at(nba_stats,
+                                 dplyr::vars(-.data$player, -.data$pos, -.data$tm, -.data$link),
+                                 dplyr::funs(as.numeric))
+  return(nba_stats)
+}
+
+
+nba_pbp <- tibble()
+for (i in 1997:2022){
+  temp <- NBAPlayByPlay(season = i) %>%
+    mutate(season = i)
+  nba_pbp <- bind_rows(nba_pbp, temp)
+}
+
+# Write csv
+# write_csv(nba_pbp, "data/nba_pbp.csv")
