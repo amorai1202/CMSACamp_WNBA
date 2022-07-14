@@ -50,7 +50,7 @@ for (i in 1997:2022){
 
 
 
-# Play type data
+# Play type data / play-by-play data
 
 wehoop::espn_wnba_game_all(401244185)[[1]] %>% view()
 
