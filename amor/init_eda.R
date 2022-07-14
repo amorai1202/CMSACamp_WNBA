@@ -41,7 +41,7 @@ OUTLIERS!!! #HOW DO WE DEAL WITH OUTLIERS
 wnba_all_stats %>% 
   filter(season == "2021") %>% 
   ggplot(aes(x=mp)) + 
-  geom_histogram(aes(y=..density..), position='identity', bins = 20) + 
+  geom_histogram(aes(y=..density..), position='identity', bins = 30) + 
   geom_density(alpha=0.2, fill="red") + # generate kernel density estimate
   labs(y = "Density", x = "Total Minutes Played", 
        title = "2021 Season - Minutes Played") + 
