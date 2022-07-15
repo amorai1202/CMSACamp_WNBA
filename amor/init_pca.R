@@ -46,6 +46,9 @@ names(which(colSums(is.na(wnba_2021_stats)) > 0))
 # DEAL WITH STATS WITH MINIMAL ATTEMPTS
 
 
+  
+
+
 
 
 # PCA ---------------------------------------------------------------------
@@ -73,8 +76,18 @@ pca_wnba %>%
              linetype = "dashed") +
   theme_bw()
 
-########use broom to create table of loading
-########tidy(matrix = "rotation")
+
+library(stringr)
+pca_var <- pca_wnba %>%
+  # Extract variable coordinates
+  tidy(matrix = "rotation") %>%
+  # Format table form long to wide
+  pivot_wider(names_from = "PC", names_prefix = "PC", values_from = "value")%>%
+  # Rename column with variable names
+  rename(Variable=column) %>% 
+  # Take absolute value
+  mutate(across(PC1:PC65, ~ abs(.x))) 
+  
 
 library(factoextra)
 fviz_eig(pca_wnba) # top 10 dimensions explain 80% of the variability
@@ -83,25 +96,40 @@ fviz_pca_biplot(pca_wnba, label = "var",
                 alpha.var = .75)
 get_eig(pca_wnba) #table of eigen/variances
 
-#Matrix of principal component scores (sign doesn't matter)
-pca_wnba$x
+#Matrix of principal component scores (sign doesn't matter) -> pca_wnba$x
 
 fviz_contrib(pca_wnba, choice = "var", axes = 1:2, top = 10) #contribution of var to first 2 dim
 fviz_pca_ind(pca_wnba) #individual points in first 2 dim
 
+
+# Pick drivers in top 16 PC's (90% of the variability explained) with low correlations
+
+pc1 <- pca_var %>%  
+  select(Variable:PC1) %>% 
+  arrange(desc(PC1)) %>% 
+  slice(1:5)
+
+#cor()
+
+
+
+pc2 <- pca_var %>%  
+  select(c(Variable,PC2)) %>% 
+  arrange(desc(PC2)) %>% 
+  slice(1:5)
+
+
+##EXTRA
 pca_results <- get_pca_var(pca_wnba)
-head(pca_results$coord, 4)
-
-
-
-
 library("corrplot")
 corrplot(pca_results$cos2, is.corr=FALSE)
+
+
 
 # Create a grouping variable using kmeans
 # Create 3 groups of variables (centers = 3)
 set.seed(123)
-res.km <- kmeans(pca_results$coord, centers = 3, nstart = 25)
+res.km <- kmeans(pca_results$coord, centers = 2, nstart = 25)
 grp <- as.factor(res.km$cluster)
 # Color variables by groups
 fviz_pca_var(pca_wnba, col.var = grp, 
@@ -109,7 +137,7 @@ fviz_pca_var(pca_wnba, col.var = grp,
              legend.title = "Cluster")
 
 
-
+# Find correlations between chosen variables from each PC (correlation matrix)
 
 
 
