@@ -11,6 +11,7 @@ wnba_pbp <- read_csv("data/wnba_pbp.csv") #2018-2022
 
 # Start by focusing on 2021 season
 wnba_2021_stats <- wnba_all_stats %>% 
+  select(-c(70,74)) %>%  #remove off_fouls_drawn (all na's) and link col's
   mutate(mpg = mp/g) %>% 
   filter(season == "2021") 
 
@@ -23,38 +24,95 @@ wnba_ecdf <- wnba_2021_stats %>%
        y = "Proportion of WNBA players")
     
 #Eliminating players that played less than 10 mpg and 5 games during the 2021 season
-#Removing TOT
+#Removing TOT (errors)
 
 wnba_2021_stats <- wnba_2021_stats %>% 
-  filter(mpg > 10, g > 5, !(tm == "TOT"))   #183 -> 136 -> 131 
+  filter(mpg > 10, g > 5, !(tm == "TOT"))   #183 -> 136 -> 131 -> 122
 
 #Which players played for more than 1 team during the season
 tbl <- table(wnba_2021_stats$player)
-tbl[tbl>1]
+#tbl[tbl>1]
 
-#CREATE TOTAL COLUMM
+#Remove rows for the 2 players that played less games with their 2nd team 
 
+wnba_2021_stats <- wnba_2021_stats %>% 
+  slice(-c(122, 115)) #120 players left
 
-  
 
 names(which(colSums(is.na(wnba_2021_stats)) > 0))
 #HOW DO WE DEAL WITH NA'S
 
+
+# DEAL WITH STATS WITH MINIMAL ATTEMPTS
 
 
 
 
 # PCA ---------------------------------------------------------------------
 
-wnba_numeric <- wnba_2021_stats %>% 
-  select_if(is.numeric)
+# REPLACE NA's WITH 0 FOR NOW
 
+wnba_numeric <- wnba_2021_stats %>% 
+  select_if(is.numeric) %>% 
+  mutate_all(~replace_na(.,0))
+  
 model_x <- as.matrix(dplyr::select(wnba_numeric, 
-                                   -season, -g, -mp, -gs, -mpg, -off_fouls_drawn))
+                                   -season, -g, -mp, -gs, -mpg))
 
 pca_wnba <- prcomp(model_x, center = TRUE, scale = TRUE)
 
-#is.infinite
-
 summary(pca_wnba)
+
+library(broom)
+pca_wnba %>%
+  tidy(matrix = "eigenvalues") %>%
+  ggplot(aes(x = PC, y = percent)) +
+  geom_line() + geom_point() +
+  geom_hline(yintercept = 1 / ncol(model_x),
+             color = "darkred", 
+             linetype = "dashed") +
+  theme_bw()
+
+########use broom to create table of loading
+########tidy(matrix = "rotation")
+
+library(factoextra)
+fviz_eig(pca_wnba) # top 10 dimensions explain 80% of the variability
+fviz_pca_biplot(pca_wnba, label = "var", 
+                alpha.ind = .5, col.var = "darkblue",
+                alpha.var = .75)
+get_eig(pca_wnba) #table of eigen/variances
+
+#Matrix of principal component scores (sign doesn't matter)
+pca_wnba$x
+
+fviz_contrib(pca_wnba, choice = "var", axes = 1:2, top = 10) #contribution of var to first 2 dim
+fviz_pca_ind(pca_wnba) #individual points in first 2 dim
+
+pca_results <- get_pca_var(pca_wnba)
+head(pca_results$coord, 4)
+
+
+
+
+library("corrplot")
+corrplot(pca_results$cos2, is.corr=FALSE)
+
+# Create a grouping variable using kmeans
+# Create 3 groups of variables (centers = 3)
+set.seed(123)
+res.km <- kmeans(pca_results$coord, centers = 3, nstart = 25)
+grp <- as.factor(res.km$cluster)
+# Color variables by groups
+fviz_pca_var(pca_wnba, col.var = grp, 
+             palette = c("#0073C2FF", "#EFC000FF", "#868686FF"),
+             legend.title = "Cluster")
+
+
+
+
+
+
+
+
 
