@@ -20,18 +20,34 @@ Over the past decade, with the growing influence of social media and heightened 
 2. ***Produce a metric, regularized adjusted plus-minus (RAPM), to measure attributes and provide better evaluations of WNBA players**
     + ***Utilize RAPM to create future projections of players**
 
-Ultimately, we believe that developing an attachment to specific WNBA players through comparisons and better metrics to measure player performance can boost year-round engagement and bring the WNBA into the spotlight and keep them there for years to come. 
+Ultimately, we believe that developing an attachment to specific WNBA players through comparisons and creating better metrics to measure player performance can boost year-round engagement and bring the WNBA into the spotlight and keep them there for years to come. 
 
 **SHINY APP:**
 
 
 # Data:
 
-To define player archetypes in the WNBA and compare WNBA players to NBA players, data must be gathered on a seasonal basis. Using Basketball Reference [4], player statistics were gathered dating back to 2018. Relevant variables were numerous, beginning with basic statistics on a per 100 possession basis. Scaling the statistics in this manner ensures that players who get more playing time can be evaluated on a closer scale to bench players who may not receive as many minutes. Advanced statistics such as PER, Usage Rate, and Win Shares were also gathered. Statistics such as these demonstrate player tendencies, efficiency, and effectiveness. Play by play statistics were also collected, which includes information on types of turnovers (bad pass, lost ball) and fouls. Lastly, data on player’s shooting tendencies were gathered; this included percent of shots within certain distance ranges and percent of shots that were assisted. 
+To define player archetypes in the WNBA and compare WNBA players to NBA players, data must be gathered on a seasonal basis. Using Basketball Reference [4], player statistics were gathered dating back to 2018. Relevant variables included:
 
-DATA As of 7/11
+* Per 100 possession statistics such as:
+  + Points, rebounds, assists
+  + Turnovers, field goals made, field goals attempted 
+  + Advanced statistics designed to demonstrate player tendencies and efficiency such as:
+  + PER, Usage Rate, Win Shares
+  
+* Play by play statistics such as:
+  + Type of turnover (bad pass, lost ball)
+  + Foul information (fouls drawn, fouls committed)
+  
+* Shooting tendency data such as:
+  + Percentage of shots at the rim, percentage of shots from 3
+  + Percentage of shots that were assisted
+
+This data allows both play style and effectiveness to be evaluated and considered when developing player archetypes and subsequently creating player comparisons between WNBA players and NBA players. 
 
 
+
+# Methods:
 
 ### Developing Archetypes:
 
@@ -47,11 +63,9 @@ Cleaning the 2021 WNBA all stats dataset:
 
 * Player sample size was reduced from 131 to 120
 
-# Methods:
+#### PCA:
 
-### PCA:
-
-* Variable selection before PCA
+* Filtering columns before PCA
   + Removed columns from clean wnba_2021_stats dataset that contain percentages and NA’s
   + Removed highly correlated attempted variables (3 pointers attempted, total field goals attempted, etc.)
 
@@ -65,7 +79,7 @@ Cleaning the 2021 WNBA all stats dataset:
 
 * Try clustering PC’s??
 
-### CLUSTERING:
+#### CLUSTERING:
 
 * Use variables from PCA to cluster WNBA players (in the 2021 season)
 
@@ -96,4 +110,222 @@ Cleaning the 2021 WNBA all stats dataset:
 [3] https://niemanreports.org/articles/covering-womens-sports/
 
 [4] https://www.basketball-reference.com/wnba/years/2022_per_game.html
+
+
+# R code:
+
+```{r - summary of dataset, echo=FALSE, message = FALSE, warning= FALSE}
+
+library(tidyverse)
+library(broom)
+library(stringr)
+library(factoextra)
+
+wnba_all_stats <- read_csv("/Users/aa/Desktop/CMSAC-22-Basketball/data/wnba_all_stats.csv") #1997-2022
+
+# 2021 season
+wnba_2021_stats <- wnba_all_stats %>% 
+  select(-c("off_fouls_drawn", "link")) %>%  #remove off_fouls_drawn (all na's) and link column
+  mutate(mpg = mp/g) %>% 
+  filter(season == "2021") 
+
+#Eliminating players that played less than 10 mpg and 5 games during the 2021 season
+
+wnba_ecdf <- wnba_2021_stats %>% #justification
+  ggplot(aes(x = mpg)) + 
+  stat_ecdf() +
+  geom_rug(alpha = 0.3) +
+  theme_bw() +
+  labs(x = "mpg",
+       y = "Proportion of WNBA players")
+
+wnba_2021_stats <- wnba_2021_stats %>% 
+  filter(mpg > 10, g > 5, !(tm == "TOT"))  #Removing TOT players (errors)
+
+#Which players played for more than 1 team during the season
+tbl <- table(wnba_2021_stats$player)
+#tbl[tbl>1]
+
+#Remove rows for the 2 players that played less games with their 2nd team 
+
+wnba_2021_stats <- wnba_2021_stats %>% 
+  slice(-c(122, 115)) #120 players left
+
+head(wnba_2021_stats)
+
+```
+
+```{r - EDA}
+#Initial EDA plots
+
+```
+
+
+```{r - PCA}
+
+#remove columns with percentages/containing na's
+wnba_numeric <- wnba_2021_stats %>% 
+  select_if(is.numeric) %>% 
+  select(-season, -g, -mp, -gs, -mpg,
+         -fgpercent, -x3ppercent, -x2ppercent, -ftpercent,
+         -fga_2p, -fga_0_3, -fga_3_10, -fga_10_16,
+         -fga_16_3p, -fga_3p, -fg_2p, -fg_0_3, -fg_3_10, 
+         -fg_10_16, -fg_16_3p, -fg_3p, -fg_2p_asst, -fg_2p_asst,
+         -corner_3s_attempt, -corner_3s_percent, -fg_3p_asst) %>% 
+  select(-contains("percent"))
+  
+#LOOK AT CORRELATION MATRIX
+
+library(ggcorrplot)
+wnba_cor_matrix <- cor(wnba_numeric)
+#ggcorrplot(wnba_cor_matrix)
+
+library(dplyr)
+library(tidyr)
+
+corr_table <- cor(wnba_numeric) %>%
+  as.data.frame() %>%
+  mutate(var1 = rownames(.)) %>%
+  gather(var2, value, -var1) %>%
+  arrange(desc(value)) %>%
+  group_by(value) %>%
+  filter(row_number()==1)
+
+
+#remove highly correlated attempted variables
+model_x <- as.matrix(dplyr::select(wnba_numeric, 
+                                   -x3pa, -x2pa, -fta, x3par, -fga_tot, 
+                                   -x3pa_tot, -x2pa_tot, -fta_tot))
+
+pca_wnba <- prcomp(model_x, center = TRUE, scale = TRUE)
+
+
+# PC's proportion of variance explained -----------------------------------
+## how ‘important’ each Principal Component is
+
+#get_eig(pca_wnba) - top 10 dimensions explain 90% of the variability
+
+dim_plot <- pca_wnba %>%
+  tidy(matrix = "eigenvalues") %>%
+  ggplot(aes(x = PC, y = percent)) +
+  geom_line() + geom_point() +
+  geom_hline(yintercept = 1 / ncol(model_x),
+             color = "darkred", 
+             linetype = "dashed") +
+  theme_bw()
+
+scree_plot <- fviz_eig(pca_wnba) #scree plot
+
+library(patchwork)
+dim_plot + scree_plot
+
+##Extra biplot
+# fviz_pca_biplot(pca_wnba, label = "var",  
+#                 alpha.ind = .5, col.var = "darkblue",
+#                 alpha.var = .75)
+
+
+#Table of variables and PC's
+
+pca_var <- pca_wnba %>%
+  # Extract variable coordinates
+  tidy(matrix = "rotation") %>%
+  # Format table form long to wide
+  pivot_wider(names_from = "PC", names_prefix = "PC", values_from = "value")%>%
+  # Rename column with variable names
+  rename(Variable=column) %>% 
+  # Take absolute value
+  mutate(across(PC1:PC45, ~ abs(.x))) 
+
+
+# Pick drivers in top 10 PC's (check for low correlations) --------------
+
+pc1 <- pca_var %>%  #fg_tot, shoot_fouls_drawn, per
+  select(Variable:PC1) %>% 
+  arrange(desc(PC1)) %>% 
+  slice(1:10)
+
+var <- get_pca_var(pca_wnba)
+a<-fviz_contrib(pca_wnba, "var", axes=1, xtickslab.rt=90) # default angle=45°
+plot(a,main = "Variables percentage contribution of first Principal Components")
+
+pc2 <- pca_var %>%  #orb, distance, trb
+  select(c(Variable,PC2)) %>% 
+  arrange(desc(PC2)) %>% 
+  slice(1:10)
+
+pc3 <- pca_var %>%  #tov, ortg, oncourt
+  select(c(Variable,PC3)) %>% 
+  arrange(desc(PC3)) %>% 
+  slice(1:10)
+
+pc4 <- pca_var %>%  #shoot_fouls_committed, pf_tot, x3p
+  select(c(Variable,PC4)) %>% 
+  arrange(desc(PC4)) %>% 
+  slice(1:10)
+
+pc5 <- pca_var %>%  #ft, pts, badpass
+  select(c(Variable,PC5)) %>% 
+  arrange(desc(PC5)) %>% 
+  slice(1:10)
+
+pc6 <- pca_var %>%  #tov, drtg, ftr
+  select(c(Variable,PC6)) %>% 
+  arrange(desc(PC6)) %>% 
+  slice(1:10)
+
+pc7 <- pca_var %>%  #stl, drtg, pf
+  select(c(Variable,PC7)) %>% 
+  arrange(desc(PC7)) %>% 
+  slice(1:10)
+
+pc8 <- pca_var %>% #stl, ftr, oncourt
+  select(c(Variable,PC8)) %>% 
+  arrange(desc(PC8)) %>% 
+  slice(1:10)
+
+pc9 <- pca_var %>%  #on_off, blk, oncourt
+  select(c(Variable,PC9)) %>% 
+  arrange(desc(PC9)) %>% 
+  slice(1:10)
+
+pc10 <- pca_var %>%  #on_off, dws, drtg
+  select(c(Variable,PC10)) %>% 
+  arrange(desc(PC10)) %>% 
+  slice(1:10)
+
+#Checking correlations for non-repeated top 3 variables in each PC
+
+pc_corr <- wnba_2021_stats %>% 
+  select(fg_tot, shoot_fouls_drawn, per, 
+         orb, distance, trb,
+         tov, ortg, oncourt,
+         shoot_fouls_committed, pf_tot, x3p,
+         ft, pts, badpass,
+         drtg, ftr,
+         stl, pf,
+         ftr,
+         on_off, blk,
+         dws) %>%
+  cor() %>% 
+  round(1)
+
+ggcorrplot(pc_corr, 
+           hc.order = TRUE,
+           type = "lower",
+           lab = TRUE)
+
+## INITIAL VARIABLES FROM PCA TO USE IN CLUSTERING:
+## fg_tot, shoot_fouls_drawn, per, orb, distance, trb, tov, ortg, oncourt,
+## shoot_fouls_committed, pf_tot, x3p, ft, pts, badpass, drtg, ftr,
+## stl, pf, ftr, on_off, blk, dws
+
+```
+
+
+
+
+
+
+
 
