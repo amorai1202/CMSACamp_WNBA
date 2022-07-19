@@ -1,0 +1,80 @@
+---
+title: "Project Report Draft"
+author: "Amor Ai, Andrew Noecke, Mykalyster Homberg"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction:
+
+Over the past decade, with the growing influence of social media and heightened popularity of global stars, interest in women’s sports has skyrocketed. However, even with the appearance of high-profile campaigns for equity in sports [1], it has nevertheless been difficult to cultivate an audience and build a market for women’s sports when they receive minimal media coverage compared to their male counterparts [2]. Although major tournaments, such as the WNBA Finals, are strong pulls for fans, the lack of nationally televised games and limited marketing budgets to showcase the players throughout the year has been a barrier for sports fans — especially established NBA fans — to consistently engage with the WNBA even when they’re interested. Furthermore, although we have seen how statistics can fuel sports passion and storytelling, it was only until recently that easy-to-access data and advanced statistics for the WNBA has even been available to the public [3]. Therefore, we seek to not only promote sustained fan engagement and interactions with the WNBA, we hope to also provide better and more accessible statistics of the players as well.
+
+**Our project aims to make the following contributions, which will be displayed in a public facing Shiny App:**
+
+1. **Develop archetypes of current WNBA players based on each player’s tendencies, abilities, and overall statistics**
+    + **Drawing comparisons between WNBA players to NBA players using the archetypes**
+2. ***Produce a metric, regularized adjusted plus-minus (RAPM), to measure attributes and provide better evaluations of WNBA players**
+    + ***Utilize RAPM to create future projections of players**
+
+Ultimately, we believe that developing an attachment to specific WNBA players through comparisons and better metrics to measure player performance can boost year-round engagement and bring the WNBA into the spotlight and keep them there for years to come. 
+
+**SHINY APP:**
+
+
+# Data:
+
+To define player archetypes in the WNBA and compare WNBA players to NBA players, data must be gathered on a seasonal basis. Using Basketball Reference [4], player statistics were gathered dating back to 2018. Relevant variables were numerous, beginning with basic statistics on a per 100 possession basis. Scaling the statistics in this manner ensures that players who get more playing time can be evaluated on a closer scale to bench players who may not receive as many minutes. Advanced statistics such as PER, Usage Rate, and Win Shares were also gathered. Statistics such as these demonstrate player tendencies, efficiency, and effectiveness. Play by play statistics were also collected, which includes information on types of turnovers (bad pass, lost ball) and fouls. Lastly, data on player’s shooting tendencies were gathered; this included percent of shots within certain distance ranges and percent of shots that were assisted. 
+
+DATA As of 7/11
+
+
+
+### Developing Archetypes:
+
+WNBA:
+
+* Players with MPG < 10 and GP < 5 were dropped
+
+* Player sample size was reduced from 183 to 131
+
+* TOT rows were eliminated due to BBallRef miscalculations of TOT rows
+
+* Kept their stats from teams on which they played more games (only 2 players played more than 5G and 10MPG on both teams)
+
+* Player sample size was reduced from 131 to 120
+
+# Methods:
+
+### PCA: 
+
+### RAPM Model:
+- Metrics Included:
+
+
+
+
+
+# Results:
+
+# Discussion:
+
+# Acknowledgements:
+
+- Max Horowitz
+- Ron Yurko
+
+
+# References:
+
+[1] https://www.teamheroine.com/blog/the-10-best-womens-sport-campaigns-of-2020
+
+[2] https://www.si.com/sports-illustrated/2021/03/24/womens-sports-gender-study-discrepancy
+
+[3] https://niemanreports.org/articles/covering-womens-sports/
+
+[4] https://www.basketball-reference.com/wnba/years/2022_per_game.html
+
