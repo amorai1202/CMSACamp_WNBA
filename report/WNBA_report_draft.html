@@ -431,7 +431,7 @@ shots that were assisted.</p>
 <p>DATA As of 7/11</p>
 <div id="developing-archetypes" class="section level3">
 <h3>Developing Archetypes:</h3>
-<p>WNBA:</p>
+<p>Cleaning the 2021 WNBA all stats dataset:</p>
 <ul>
 <li><p>Players with MPG &lt; 10 and GP &lt; 5 were dropped</p></li>
 <li><p>Player sample size was reduced from 183 to 131</p></li>
@@ -447,6 +447,36 @@ rows</p></li>
 <h1>Methods:</h1>
 <div id="pca" class="section level3">
 <h3>PCA:</h3>
+<ul>
+<li>Variable selection before PCA
+<ul>
+<li>Removed columns from clean wnba_2021_stats dataset that contain
+percentages and NA’s</li>
+<li>Removed highly correlated attempted variables (3 pointers attempted,
+total field goals attempted, etc.)</li>
+</ul></li>
+<li>PCA results
+<ul>
+<li>Top 10 dimensions explain 90% of the variability</li>
+<li>Grabbed top 3 drivers in each of the top 10 PC’s and removed
+repeated variables</li>
+<li>Checked correlation matrix</li>
+</ul></li>
+<li>Initial variables from PCA to use in clustering:
+<ul>
+<li>fg_tot, shoot_fouls_drawn, per, orb, distance, trb, tov, ortg,
+oncourt, shoot_fouls_committed, pf_tot, x3p, ft, pts, badpass, drtg,
+ftr, stl, pf, ftr, on_off, blk, dws</li>
+</ul></li>
+<li>Try clustering PC’s??</li>
+</ul>
+</div>
+<div id="clustering" class="section level3">
+<h3>CLUSTERING:</h3>
+<ul>
+<li>Use variables from PCA to cluster WNBA players (in the 2021
+season)</li>
+</ul>
 </div>
 <div id="rapm-model" class="section level3">
 <h3>RAPM Model:</h3>

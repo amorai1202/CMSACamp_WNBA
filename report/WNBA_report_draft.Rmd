@@ -35,7 +35,7 @@ DATA As of 7/11
 
 ### Developing Archetypes:
 
-WNBA:
+Cleaning the 2021 WNBA all stats dataset:
 
 * Players with MPG < 10 and GP < 5 were dropped
 
@@ -49,7 +49,26 @@ WNBA:
 
 # Methods:
 
-### PCA: 
+### PCA:
+
+* Variable selection before PCA
+  + Removed columns from clean wnba_2021_stats dataset that contain percentages and NA’s
+  + Removed highly correlated attempted variables (3 pointers attempted, total field goals attempted, etc.)
+
+* PCA results
+  + Top 10 dimensions explain 90% of the variability
+  + Grabbed top 3 drivers in each of the top 10 PC's and removed repeated variables
+  + Checked correlation matrix
+
+* Initial variables from PCA to use in clustering: 
+  + fg_tot, shoot_fouls_drawn, per, orb, distance, trb, tov, ortg, oncourt, shoot_fouls_committed, pf_tot, x3p, ft, pts, badpass, drtg, ftr, stl, pf, ftr, on_off, blk, dws
+
+* Try clustering PC’s??
+
+### CLUSTERING:
+
+* Use variables from PCA to cluster WNBA players (in the 2021 season)
+
 
 ### RAPM Model:
 - Metrics Included:
