@@ -252,3 +252,17 @@ for (i in 1997:2022){
 
 # Write csv
 # write_csv(nba_pbp, "data/nba_pbp.csv")
+
+
+nba_pergame_statistics <- tibble()
+for (i in 1997:2022){
+  temp <- NBAPerGameStatistics(season = i) %>%
+    mutate(season = i)
+  nba_pergame_statistics <- bind_rows(nba_pergame_statistics, temp)
+}
+
+# Write csv
+write_csv(nba_pergame_statistics, "data/nba_pergame_stats.csv")
+
+
+
