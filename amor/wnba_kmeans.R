@@ -78,6 +78,9 @@ km_centers$Cluster <- factor(km_centers$Cluster, levels =
                                c("Cluster 1", "Cluster 2", "Cluster 3",
                                  "Cluster 4", "Cluster 5", "Cluster 6"))
 
+km_centers <- km_centers %>% 
+  pivot_longer(!Cluster, names_to = "feature", values_to = "val")
+
 # View individual clusters -----------------------------------------------------------
 library(gghighlight)
 
@@ -112,6 +115,8 @@ km_centers %>%
   theme(legend.position = "none", strip.text = element_text(face='bold'),
         axis.text.x = element_text(angle=90, size=8), # alter axis text
         panel.grid.minor = element_blank())
+
+
 
 
 
