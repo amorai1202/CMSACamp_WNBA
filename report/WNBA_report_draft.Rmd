@@ -24,6 +24,8 @@ Ultimately, we believe that developing an attachment to specific WNBA players th
 
 **SHINY APP:**
 
+![](shinyapp.png)
+
 
 # Data:
 
@@ -63,7 +65,7 @@ Cleaning the 2021 WNBA all stats dataset:
 
 * Player sample size was reduced from 131 to 120
 
-#### PCA:
+#### PCA: 
 
 * Filtering columns before PCA
   + Removed columns from clean wnba_2021_stats dataset that contain percentages and NA’s
@@ -79,12 +81,12 @@ Cleaning the 2021 WNBA all stats dataset:
 
 * Try clustering PC’s??
 
-#### CLUSTERING:
+#### CLUSTERING: 
 
 * Use variables from PCA to cluster WNBA players (in the 2021 season)
 
 
-### RAPM Model:
+### RAPM Model: {.tabset}
 - Metrics Included:
 
 
@@ -322,6 +324,92 @@ ggcorrplot(pc_corr,
 
 ```
 
+```{r - clustering, warning=FALSE}
+
+# K-means clustering ------------------------------------------------------
+
+var <- wnba_2021_stats %>% 
+  dplyr::select(fg_tot, shoot_fouls_drawn, per, orb, distance, trb, tov, ortg, oncourt,
+                shoot_fouls_committed, pf_tot, x3p, ft, pts, badpass, drtg, ftr,
+                stl, pf, ftr, on_off, blk, dws) %>% 
+  scale() 
+
+#Find the optimal k
+
+n_clusters_search <- 2:12
+tibble(total_wss = 
+         # Compute total WSS for each number by looping with sapply
+         sapply(n_clusters_search,
+                function(k) {
+                  kmeans_results <- kmeans(var, 
+                                           centers = k, nstart = 30)
+                  # Return the total WSS for choice of k
+                  return(kmeans_results$tot.withinss)
+                })) %>%
+  mutate(k = n_clusters_search) %>%
+  ggplot(aes(x = k, y = total_wss)) +
+  geom_line() + geom_point() +
+  labs(x = "Number of clusters K", y = "Total WSS") +
+  theme_bw()
+
+
+# What num of cluster to choose?
+
+# Try 6 clusters
+
+set.seed(101)
+k <- 6
+
+init_kmeans <- kmeans(var, algorithm = "Lloyd", centers = k, nstart = 30)
+km_centers <- as.data.frame(init_kmeans$centers) # SCALED cluster centers/means
+
+# Name clusters 
+km_centers$Cluster <- c("Cluster 1", "Cluster 2", "Cluster 3",
+                        "Cluster 4", "Cluster 5", "Cluster 6")
+km_centers$Cluster <- factor(km_centers$Cluster, levels = 
+                               c("Cluster 1", "Cluster 2", "Cluster 3",
+                                 "Cluster 4", "Cluster 5", "Cluster 6"))
+
+km_centers <- km_centers %>% 
+  pivot_longer(!Cluster, names_to = "feature", values_to = "val")
+
+# View individual clusters -----------------------------------------------------------
+library(gghighlight)
+
+#Cluster 1:
+km_centers %>% 
+  ggplot(aes(x=feature, y=val, color=Cluster)) + 
+  geom_point(alpha = 0.75) + 
+  gghighlight(Cluster=='Cluster 1', use_direct_label = FALSE) + # highlight cluster 1
+  labs(x = "Predictor", y = "Cluster Center",  
+       title = "Visualizing K-Means Cluster Makeups", 
+       subtitle = "Cluster 1") +  # plot subtitle
+  theme_bw() +
+  theme(legend.position = "none", # manually adjust themes
+        axis.text.x = element_text(angle=90, size=10))
+
+#View players in cluster 1
+
+#tibble(cluster=init_kmeans$cluster, name=wnba_2021_stats$player) %>%
+  #filter(cluster==1)
+
+#All clusters:
+
+km_centers %>% 
+  ggplot(aes(x=feature, y=val, color=Cluster)) + 
+  geom_point() + # plot points
+  scale_color_brewer(palette="Paired") + # color points
+  gghighlight(use_direct_label = FALSE) + # highlight each cluster
+  facet_wrap(~ Cluster, ncol=3) + # create separate plots for each cluster
+  labs(x = "Predictor", y = "Cluster Center", 
+       title = "Visualizing K-Means Cluster Makeups") + 
+  theme_bw()+ 
+  theme(legend.position = "none", strip.text = element_text(face='bold'),
+        axis.text.x = element_text(angle=90, size=8), # alter axis text
+        panel.grid.minor = element_blank())
+
+
+```
 
 
 
