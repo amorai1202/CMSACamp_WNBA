@@ -73,8 +73,9 @@ nba_standard_stats <- nba_select_stats %>%
 # NBA GMM Modeling --------------------------------------------------------
 
 set.seed(2001)
-nba_mclust_std2 <- Mclust(dplyr::select(nba_standard_stats, -c(1:7)))
-write_rds(nba_mclust_std2, "models/nba_mclust_std2.rds")
+nba_mclust_std2 <- read_rds("models/nba_mclust_std2.rds")
+# nba_mclust_std2 <- Mclust(dplyr::select(nba_standard_stats, -c(1:7)))
+# write_rds(nba_mclust_std2, "models/nba_mclust_std2.rds")
 
 summary(nba_mclust_std2)
 
@@ -198,15 +199,42 @@ long_dist_matrix %>%
 
 
 
-long_dist_matrix %>%
+wnba21_nba22_comps <- long_dist_matrix %>%
   mutate(league2 = rep(nba_wnba_combined$league, times = nrow(nba_wnba_combined)),
          pred_class = rep(nba_wnba_combined$pred_class, each = nrow(nba_wnba_combined))) %>%
   filter(player1 != player2) %>%
   filter(league == "WNBA",
-         league2 == "NBA") %>%
+         league2 == "NBA",
+         str_detect(player1, "2021"),
+         str_detect(player2, "2022")) %>%
   group_by(player1) %>%
-  slice_min(distance, n = 3) %>% 
-  pivot_wider()
+  slice_min(distance, n = 5) %>% 
+  ungroup() %>% 
+  separate(player1, c("wnba_player", "wnba_season"), sep = "_") %>% 
+  separate(player2, c("nba_player", "nba_season"), sep = "_")
+
+wide_wnba21_nba22_comps <- wnba21_nba22_comps %>%
+  group_by(wnba_player) %>%
+  slice_min(distance, n = 1) %>%
+  ungroup()
+
+
+# Making dataset wider so player1 player 2 etc are their own respective columns
+for (i in 2:5) {
+  player_list <- wnba21_nba22_comps$nba_player[seq(i, nrow(wnba21_nba22_comps), by = 5)]
+  distance_list <- wnba21_nba22_comps$distance[seq(i, nrow(wnba21_nba22_comps), by = 5)]
+  wide_wnba21_nba22_comps <- wide_wnba21_nba22_comps %>%
+    mutate(nba_player_x = player_list,
+           distance_x = distance_list) 
+  
+  colnames(wide_wnba21_nba22_comps)[(ncol(wide_wnba21_nba22_comps)-1):ncol(wide_wnba21_nba22_comps)] <- c(paste0("nba_player", i), paste0("distance", i))
+}
+
+
+
+
+
+
 
 
 
