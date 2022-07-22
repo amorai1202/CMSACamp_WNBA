@@ -1,5 +1,5 @@
 ---
-title: "NEW TITLE"
+title: "WNBA Player Archetypes &      Comparisons"
 author: 
  - Amor Ai^[Carnegie Mellon University, amorai@cmu.edu]
  - Andrew Noecke^[St. Olaf College, noecke2@stolaf.edu]
@@ -25,7 +25,7 @@ blockquote {
 ```{r, echo=FALSE}
 htmltools::img(src = knitr::image_uri("wnbalogo.png"), 
                alt = 'logo', 
-               style = 'position:absolute; top:0; right:0; padding:30px;')
+               style = 'position:absolute; top:0; right:0; padding:65px')
 ```
 
 ```{r setup, include=FALSE}
@@ -42,7 +42,7 @@ Over the past decade, with the growing influence of social media and heightened 
 >     -   Conduct archetype exploration on NBA players using the same variables to discover similarities and differences in the type of players between the respective leagues
 
 > 2.  Draw comparisons between WNBA players to NBA players
->     -   Each WNBA player (that has played significant minutes/games) will be matched with 5 similar NBA players in terms of their play style
+>     -   Each WNBA player (that has played significant minutes/games) will be matched with 3-5 similar NBA players in terms of their play style
 
 Ultimately, we believe that labeling each WNBA player with an archetype and developing an attachment to specific WNBA players through comparisons with NBA players can boost year-round engagement and bring the WNBA into the spotlight and keep them there for years to come.
 
@@ -50,9 +50,11 @@ Ultimately, we believe that labeling each WNBA player with an archetype and deve
 
 ![](shinyapp.png)
 
+---
+
 # Data:
 
-To define player archetypes in the WNBA and compare WNBA players to NBA players, data must be gathered on a seasonal basis. Using Basketball Reference^4^, player statistics were gathered dating back to 2018. Relevant variables included:
+To define player archetypes in the WNBA and compare WNBA players to NBA players, data must be gathered on a seasonal basis. Using Basketball Reference^4^ (BBallRef), player statistics were gathered dating back to 2018. Relevant variables included:
 
 -   Per 100 possession statistics such as:
     -   Points, rebounds, assists
@@ -68,49 +70,96 @@ To define player archetypes in the WNBA and compare WNBA players to NBA players,
 
 This data allows both play style and effectiveness to be evaluated and considered when developing player archetypes and subsequently creating player comparisons between WNBA players and NBA players.
 
+------------------------------------------------------------------------
+
+*Cleaning the WNBA all stats dataset:*
+
+-   Gathered data from the 2018 - 2021 seasons
+-   Players with minutes per game \< 10 and games played \< 5 were dropped to remove players who've played an insignificant amount of time
+    -   Roughly 25% of players were removed based on an ECDF graph
+-   TOT rows were eliminated due to BBallRef miscalculations of TOT rows
+    -   If a player played with multiple teams over the course of a season, we kept their statistics from teams on which they played more minutes
+-   Re-labeled all player positions to either "G", "F", or "C" for guards, forwards, and centers respectively
+
+*Cleaning the NBA all stats dataset:*
+
+-   Gathered data from the 2018 - 2021 seasons
+-   Players with less than 100 total minutes played were dropped to remove players who've played an insignificant amount of time
+    -   Roughly 10-15% of players were removed based on an ECDF graph
+-   Removed 3 outliers who did not have a TOT column
+-   Re-labeled all player positions to either "PG", "SG", "SF", "PF", or "C" for point guards, shooting guards, small forwards, power forwards, and centers respectively
+
+---
+
 # Methods:
 
-### Developing Archetypes:
+## 1. Developing Archetypes:
 
-Cleaning the 2021 WNBA all stats dataset:
+To choose which subset of variables were important in determining the archetypes, principal component analysis (PCA) was used to reduce the dimensionality of the feature space.
 
--   Players with MPG \< 10 and GP \< 5 were dropped
+### PCA:
 
--   Player sample size was reduced from 183 to 131
-
--   TOT rows were eliminated due to BBallRef miscalculations of TOT rows
-
--   Kept their stats from teams on which they played more games (only 2 players played more than 5G and 10MPG on both teams)
-
--   Player sample size was reduced from 131 to 120
-
-#### PCA:
-
--   Filtering columns before PCA
-    -   Removed columns from clean wnba_2021_stats dataset that contain percentages and NA's
-    -   Removed highly correlated attempted variables (3 pointers attempted, total field goals attempted, etc.)
--   PCA results
+-   Filtering WNBA all stats columns before PCA:
+    -   Only used data from the 2021 season
+    -   Filtered out non-numeric, percentages, and highly correlated variables (i.e., fgpercent, fga_2p, corner_3s_attempt)
+-   PCA results:
     -   Top 10 dimensions explain 90% of the variability
     -   Grabbed top 3 drivers in each of the top 10 PC's and removed repeated variables
-    -   Checked correlation matrix
--   Initial variables from PCA to use in clustering:
-    -   fg_tot, shoot_fouls_drawn, per, orb, distance, trb, tov, ortg, oncourt, shoot_fouls_committed, pf_tot, x3p, ft, pts, badpass, drtg, ftr, stl, pf, ftr, on_off, blk, dws
+    -   Checked correlation matrix and filtered out highly correlated variables
+-   Variables from PCA results to use in clustering:
+    -   x3p, distance, trb, orb, ows, ortg, ft, fg, pts, fga, pf, tov, drtg, stl, per, blk, ast
 
-#### Clustering:
+### Clustering:
 
--   Methods
+To allow for some uncertainty in the clustering results, a Gaussian Mixture Model (GMM) was used to yield soft assignments for clustering the players.
+
+------------------------------------------------------------------------
+
+## 2. WNBA vs NBA Player Comparisons
+
+In order to develop a model that would receive a WNBA player as input and output 3-5 NBA players who have similar play tendencies, a Gaussian Mixture Model (GMM) was trained using the past 5 seasons of NBA data (2018-2022). In doing so, clusters of NBA players were created, with corresponding probabilities for each player belonging to each cluster. WNBA player profiles consisting of the same variables were then fed into the model, similarly receiving probabilities of belonging to each cluster. To derive the NBA player most similar to a WNBA player, the Euclidean distance between a WNBA player's cluster probabilities and all NBA player's cluster probabilities was calculated. The NBA player with the lowest corresponding distance of probabilities was selected as the comparison for the WNBA player of interest. A GMM was chosen over K-Means clustering to take advantage of soft assignments and the probabilities generated by a GMM.
+
+These probabilities of an observation being assigned to each cluster were then used to compare players. This was done by computing the Euclidean distance between the cluster probabilities for each observation and taking the 'closest' observation (minimum distance). This allowed a WNBA player to be fed into the model, the distance to be calculated, and to take the 'closest' NBA player and declare that as the player comparison.
+
+---
 
 # Results:
 
-## Clustering results: {.tabset .tabset-pills}
+## EDA
+
+------------------------------------------------------------------------
+
+## 1. Archetypes: {.tabset .tabset-pills}
 
 ### WNBA
 
--   Use variables from PCA to cluster WNBA players (in the 2021 season)
+*5 clusters/archetypes:*
+
+1.
+2.
+3.
+4.
+5.
 
 ### NBA
 
--   results
+*9 clusters/archetypes:*
+
+1.
+2.
+3.
+4.
+5.
+6. 
+7. 
+8. 
+9. 
+
+------------------------------------------------------------------------
+
+## 2. Player Comparison:
+
+---
 
 # Discussion:
 
@@ -122,10 +171,13 @@ Cleaning the 2021 WNBA all stats dataset:
     -   Utilize RAPM to create future projections of players
 -   
 
+---
+
 # Acknowledgements:
 
 -   Max Horowitz
 -   Ron Yurko
+---
 
 # References:
 
