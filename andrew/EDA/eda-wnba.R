@@ -68,7 +68,9 @@ wnba_pos %>%
   stat_ecdf() + 
   theme_bw() + 
   scale_y_continuous(expand = expansion(mult = c(0, 0.05)))+
-  scale_x_continuous(expand = expansion(mult = c(0.01, 0.01)))  + 
+  scale_x_continuous(expand = expansion(mult = c(0.01, 0.01)))  +
+  ggthemes::scale_color_colorblind() + 
+  ggthemes::scale_fill_colorblind() + 
   theme(plot.title = element_text(hjust = 0.5),
         legend.position = "bottom") + 
   labs(x = "Average Shot Distance",
@@ -76,9 +78,68 @@ wnba_pos %>%
        title = "A clear chasm exists between the 3 main WNBA positions regarding average shot distance",
        color = "Position")
   
+
+wnba_pos %>%
+  mutate(mpg = mp / g,
+         pos = fct_recode(pos, 
+                    "Center" = "C",
+                    "Forward" = "F",
+                    "Guard" = "G")) %>%
+  # Getting rid of data entry errors and players with not enough minutes
+  filter(season <= 2022, g >= 5, mpg >= 5, tm != "TOT") %>%
+  ggplot(aes(x = fga)) + 
+  geom_histogram(fill = "cornflowerblue", alpha = 0.5, bins = 30) + 
+  facet_wrap(~ pos, nrow = 3, scale = 'free_y') + 
+  theme_bw() + 
+  theme(strip.background = element_blank(),
+        plot.title = element_text(hjust = 0.5)) +
+  labs(x = "Field Goals Attempted per 100 possessions",
+       y = "No. of Players",
+       title = "Centers display a wider spread of FG attempts than guards and forwards"
+       )
+
+
+astpercent <- wnba_pos %>%
+  mutate(mpg = mp / g,
+         pos = fct_recode(pos, 
+                          "Center" = "C",
+                          "Forward" = "F",
+                          "Guard" = "G")) %>%
+  # Getting rid of data entry errors and players with not enough minutes
+  filter(season <= 2022, g >= 5, mpg >= 5, tm != "TOT") %>%
+  ggplot(aes(x = astpercent)) + 
+  geom_histogram(fill = "cornflowerblue", alpha = 0.5, bins = 30) + 
+  facet_wrap(~ pos, nrow = 3, scale = 'free_y') + 
+  theme_bw() + 
+  theme(strip.background = element_blank(),
+        plot.title = element_text(hjust = 0.5)) +
+  labs(x = "Assist Percentage",
+       y = "No. of Players",
+       title = "Assist rate leans heavily towards guards"
+  )
   
 
+blkpercent <- wnba_pos %>%
+  mutate(mpg = mp / g,
+         pos = fct_recode(pos, 
+                          "Center" = "C",
+                          "Forward" = "F",
+                          "Guard" = "G")) %>%
+  # Getting rid of data entry errors and players with not enough minutes
+  filter(season <= 2022, g >= 5, mpg >= 5, tm != "TOT") %>%
+  ggplot(aes(x = blkpercent)) + 
+  geom_histogram(fill = "darkorange", alpha = 0.5, bins = 30) + 
+  facet_wrap(~ pos, nrow = 3, scale = 'free_y') + 
+  theme_bw() + 
+  theme(strip.background = element_blank(),
+        plot.title = element_text(hjust = 0.5)) +
+  labs(x = "Block Percentage",
+       y = "No. of Players",
+       title = "Block rate leans heavily towards bigs"
+  )
 
+library(patchwork)
+astpercent + blkpercent
 
 
 player_id <- wnba_all_stats %>%

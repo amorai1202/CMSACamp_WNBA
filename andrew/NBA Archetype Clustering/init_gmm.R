@@ -28,13 +28,10 @@ nba_all_stats <- nba_all_stats_raw %>%
 nba_all_stats <- nba_all_stats %>%
   filter(!(player %in% c("Chris Johnson", "Marcus Williams", "Tony Mitchell")))
 
-# Filter out by minutes played - 100 was around 10-15% of the data
+# Filter out by minutes played - 
 nba_all_stats <- nba_all_stats %>%
-  filter(mp >= 100)
-
-nba_all_stats %>%
-  ggplot(aes(x = mp)) + 
-  stat_ecdf()
+  mutate(mpg = mp / g) %>%
+  filter(mpg >= 12, g >= 10)
 
 
 # Now select trimmed variables before clustering
@@ -71,7 +68,7 @@ nba_player_probs <- nba_player_probs %>%
                names_to = "cluster",
                values_to = "prob")
 
-  
+# Plotting init_gmm
 nba_player_probs %>%
   ggplot(aes(prob)) +
   geom_histogram() +
@@ -94,3 +91,43 @@ nba_select_stats %>%
   theme_bw() +
   facet_wrap(~ cluster, 
              scales = 'free_y', nrow = 3)
+
+
+# FILTERED GMM using 2018-2022 data
+
+set.seed(2001)
+nba_filtered_stats <- nba_select_stats %>%
+  filter(season >= 2018)
+
+nba_mclust_filtered <- Mclust(dplyr::select(nba_filtered_stats, -c(1:9)))
+
+summary(nba_mclust_filtered)
+
+# WRITE RDS
+
+nba_filtered_stats <- nba_filtered_stats %>%
+  unite("player_season", c(player, season), remove = FALSE)
+
+nba_player_probs <- nba_mclust_filtered$z
+
+colnames(nba_player_probs) <- paste0("Cluster ", 1:9)
+
+nba_player_probs <- nba_player_probs %>%
+  as_tibble() %>%
+  mutate(player = 
+           nba_filtered_stats$player, 
+         season = nba_filtered_stats$season,
+         player_season = nba_filtered_stats$player_season) %>%
+  pivot_longer(contains("Cluster"),
+               names_to = "cluster",
+               values_to = "prob")
+
+
+nba_filtered_stats %>%
+  mutate(cluster = nba_mclust_filtered$classification,
+         uncertainty = nba_mclust_filtered$uncertainty) %>%
+  count(player, cluster)
+
+nba_filtered_stats
+  
+  
