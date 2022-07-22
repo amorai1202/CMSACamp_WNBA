@@ -7,6 +7,7 @@ author:
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: 
   html_document:
+    css: style.css
     theme: spacelab
     highlight: tango
     toc: true
@@ -22,12 +23,6 @@ blockquote {
     font-size: 14px;
     border-left: 5px solid #eee;
 }
-```
-
-```{r, echo=FALSE}
-htmltools::img(src = knitr::image_uri("report/wnbalogo.png"), 
-               alt = 'logo', 
-               style = 'position:absolute; top:10; right:0; padding:20px')
 ```
 
 ```{r setup, include=FALSE}
@@ -376,8 +371,8 @@ These probabilities of an observation being assigned to each cluster were then u
 
 ## 2. Player Comparison: {.tabset .tabset-pills}
 
-<div style="margin-bottom:40px;">
-</div>
+::: {style="margin-bottom:40px;"}
+:::
 
 **Table of comparisons for 3 example players:**
 
@@ -410,20 +405,22 @@ demo_comps %>%
 
 ```
 
-<div style="margin-bottom:50px;">
-</div>
+::: {style="margin-bottom:50px;"}
+:::
 
 **Initial shiny app examples for the 3 players in the table above:**
 
 ### Plum
+
 ![](kelsey_plum_demo.png)
 
 ### Quigley
-![](allie_quigley_demo.png) 
+
+![](allie_quigley_demo.png)
 
 ### Stewart
-![](breanna_stewart_demo.png) 
 
+![](breanna_stewart_demo.png)
 
 # Discussion:
 
@@ -431,22 +428,20 @@ demo_comps %>%
 -   The 10 archetypes defined using results-based statistics suggest that NBA and WNBA have nearly identical archetypes
 -   MORE TO BE ADDED LATER
 
-
 ### Limitations
 
 -   The process of defining archetypes following clustering was not precise: it relied mostly on a combination of cluster averages and knowledge of basketball
 -   Calculating the Euclidean distance of cluster probabilities could lead to some comparisons that are considered erroneous
 -   Trying to compare by play style across the WNBA and NBA is a flawed premise because the general style of play is different (e.g lob threats in the NBA)
 
-
 ### Next steps:
 
 -   Produce a metric, regularized adjusted plus-minus (RAPM), to measure attributes and provide better evaluations of WNBA players
     -   Utilize RAPM to create future projections of players
--   Allow for more user interactions within the app 
-    -  Add ability for user inputs
+-   Allow for more user interactions within the app
+    -   Add ability for user inputs
 -   Try utilizing a decision tree to create comparisons
--   Create a team building player-type evaluation tool 
+-   Create a team building player-type evaluation tool
 
 ------------------------------------------------------------------------
 
