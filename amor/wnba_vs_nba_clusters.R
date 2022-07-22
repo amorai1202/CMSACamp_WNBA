@@ -69,9 +69,10 @@ library(vip)
 set.seed(2001)
 
 wnba_select_stats <- wnba_all_stats %>% 
-  dplyr::select(x3p, distance, trb, orb, ows, 
-                ortg, ft, fg, pts, fga, pf, tov, drtg, stl, per, blk, ast) 
-
+  dplyr::select(shoot_fouls_drawn, x3p, 
+                distance, trb, orb, ows, oncourt, ws_40, 
+                ortg, ft, fg, pts, x3par, shoot_fouls_committed, 
+                fga, ftr, pf, tov, drtg, stl, per, blk, ast, on_off) 
 
 wnba_std <- wnba_select_stats %>%
   mutate(across(.cols = (1:24), .fns = scale)) %>%
@@ -79,9 +80,8 @@ wnba_std <- wnba_select_stats %>%
 
 nba_select_stats <- nba_all_stats %>%
   dplyr::select(x3p, distance, trb, orb, ows, 
-                ortg, ft, fg, pts,
-                fga, pf, tov, drtg, stl, per, blk, ast)  
-
+                ortg, ft, fg, pts, x3par,
+                fga, ftr, pf, tov, drtg, stl, per, blk, ast)  
 
 #no ws_40 variable, shoot_fouls_drawn, oncourt, shoot_fouls_committed, on_off are all NA's
 
@@ -89,31 +89,30 @@ nba_std <- nba_select_stats %>%
   mutate(across(.cols = (1:19), .fns = scale)) %>%
   mutate(across(.cols = (1:19), .fns = as.numeric)) 
 
-
 # Clustering --------------------------------------------------------------
 
 init_wnba_mclust <- Mclust(wnba_std)
 init_nba_mclust <- Mclust(nba_std)
-write_rds(init_wnba_mclust, "models/init_wnba_mclust.rds")
-write_rds(init_nba_mclust, "models/init_nba_mclust.rds")
+write_rds(init_wnba_mclust, "models/final_wnba_mclust.rds")
+write_rds(init_nba_mclust, "models/final_nba_mclust.rds")
 
-init_wnba_mclust <- readRDS("models/init_wnba_mclust.rds")
-init_nba_mclust <- readRDS("models/init_nba_mclust.rds")
+final_wnba_mclust <- readRDS("models/final_wnba_mclust.rds")
+final_nba_mclust <- readRDS("models/final_nba_mclust.rds")
 
 
 wnba_cluster <- wnba_all_stats %>%
   mutate(cluster =
-           init_wnba_mclust$classification,
+           final_wnba_mclust$classification,
          uncertainty =
-           init_wnba_mclust$uncertainty) %>%
+           final_wnba_mclust$uncertainty) %>%
   group_by(cluster) %>%
   arrange(uncertainty)
 
 nba_cluster <- nba_all_stats %>%
   mutate(cluster =
-           init_nba_mclust$classification,
+           final_nba_mclust$classification,
          uncertainty =
-           init_nba_mclust$uncertainty) %>%
+           final_nba_mclust$uncertainty) %>%
   group_by(cluster) %>%
   arrange(uncertainty)
 
@@ -127,12 +126,12 @@ nba_cluster <- nba_cluster %>%
 #view(nba_cluster)
 
 #Position-Cluster tables
-table("Clusters" = init_wnba_mclust$classification, "Positions" = wnba_all_stats$pos)
-wnba_player_probs <- init_wnba_mclust$z
+table("Clusters" = final_wnba_mclust$classification, "Positions" = wnba_all_stats$pos)
+wnba_player_probs <- final_wnba_mclust$z
 colnames(wnba_player_probs) <- paste0("Cluster ", 1:5)
 
-table("Clusters" = init_nba_mclust$classification, "Positions" = nba_all_stats$pos)
-nba_player_probs <- init_nba_mclust$z
+table("Clusters" = final_nba_mclust$classification, "Positions" = nba_all_stats$pos)
+nba_player_probs <- final_nba_mclust$z
 colnames(nba_player_probs) <- paste0("Cluster ", 1:9)
 
 
@@ -158,9 +157,9 @@ nba_player_probs <- nba_player_probs %>%
 #Uncertainty plots
 wnba_uncertainty <- wnba_all_stats %>%
   mutate(cluster =
-           init_wnba_mclust$classification,
+           final_wnba_mclust$classification,
          uncertainty =
-           init_wnba_mclust$uncertainty) %>%
+           final_wnba_mclust$uncertainty) %>%
   group_by(cluster) %>%
   arrange(desc(uncertainty)) %>%
   slice(1:5) %>%
@@ -176,9 +175,9 @@ wnba_uncertainty <- wnba_all_stats %>%
 
 nba_uncertainty <- nba_all_stats %>%
   mutate(cluster =
-           init_nba_mclust$classification,
+           final_nba_mclust$classification,
          uncertainty =
-           init_nba_mclust$uncertainty) %>%
+           final_nba_mclust$uncertainty) %>%
   group_by(cluster) %>%
   arrange(desc(uncertainty)) %>%
   slice(1:9) %>%
