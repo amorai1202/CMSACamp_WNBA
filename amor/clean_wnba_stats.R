@@ -31,7 +31,7 @@ wnba_all_stats_clean <- wnba_seasons %>%
   filter(mpg > 10, g > 5)
 
 # WRITE CSV
-write_csv(wnba_all_stats_clean, "data/wnba_all_stats_clean.csv")
+write_csv(wnba_all_stats_clean, "data/wnba_all_stats_clean2.csv")
 
 
 

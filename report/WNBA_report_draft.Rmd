@@ -2,15 +2,17 @@
 title: "WNBA Player Archetypes & Comparisons"
 author: 
  - Amor Ai^[Carnegie Mellon University, amorai@cmu.edu]
- - Andrew Noecke^[St. Olaf College, noecke2@stolaf.edu]
+ - Andrew Noecker^[St. Olaf College, noecke2@stolaf.edu]
  - Mykalyster Homberg^[Harvard University, mhombergbertley@college.harvard.edu]
-date: "`r Sys.Date()`"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: 
   html_document:
     theme: spacelab
     highlight: tango
     toc: true
     toc_float: true
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{css style settings, echo = FALSE}
@@ -34,7 +36,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introduction:
 
-Over the past decade, with the growing influence of social media and heightened popularity of global stars, interest in women's sports has skyrocketed. However, even with the appearance of high-profile campaigns for equity in sports^1^, it has nevertheless been difficult to cultivate an audience and build a market for women's sports when they receive minimal media coverage compared to their male counterparts^2^. Although major tournaments, such as the WNBA Finals, are strong pulls for fans, the lack of nationally televised games and limited marketing budgets to showcase the players throughout the year has been a barrier for sports fans --- especially established NBA fans --- to consistently engage with the WNBA even when they're interested. Furthermore, although we have seen how statistics can fuel sports passion and storytelling, it was only until recently that easy-to-access data and advanced statistics for the WNBA has even been available to the public^3^. Therefore, we seek to not only promote sustained fan engagement and interactions with the WNBA, we hope to also provide better and more accessible statistics of the players as well.
+Over the past decade, with the growing influence of social media and heightened popularity of global stars, interest in women's sports has skyrocketed. However, even with the appearance of high-profile campaigns for equity in sports^1^, it has nonetheless been difficult to cultivate an audience and build a market for women's sports when they receive minimal media coverage compared to their male counterparts^2^. Although major tournaments, such as the WNBA Finals, are strong pulls for fans, the lack of nationally televised games and limited marketing budgets to showcase the players throughout the year has been a barrier for sports fans --- especially established NBA fans --- to consistently engage with the WNBA even when they're interested. Furthermore, although we have seen how statistics can fuel sports passion and storytelling, it was only recently that data and advanced statistics for the WNBA became easily accessible to the public^3^. Therefore, we seek to not only promote sustained fan engagement and interactions with the WNBA, we hope to also provide better and more accessible statistics of the players as well.
 
 **Our project aims to make the following contributions, which will be displayed in a public facing Shiny App:**
 
@@ -42,9 +44,9 @@ Over the past decade, with the growing influence of social media and heightened 
 >     -   Conduct archetype exploration on NBA players using the same variables to discover similarities and differences in the type of players between the respective leagues
 
 > 2.  Draw comparisons between WNBA players to NBA players
->     -   Each WNBA player (that has played significant minutes/games) will be matched with 3-5 similar NBA players in terms of their play style
+>     -   Each WNBA player (that has played significant minutes/games) will be matched with 3-5 similar NBA players based SOLELY on their play style
 
-Ultimately, we believe that labeling each WNBA player with an archetype and developing an attachment to specific WNBA players through comparisons with NBA players can boost year-round engagement and bring the WNBA into the spotlight and keep them there for years to come.
+Ultimately, we believe that labeling each WNBA player with an archetype and developing an NBA player comparison can boost year-round engagement and bring the WNBA into the spotlight and keep them there for years to come.
 
 ### Shiny app inspiration:
 
@@ -54,17 +56,17 @@ Ultimately, we believe that labeling each WNBA player with an archetype and deve
 
 # Data:
 
-To define player archetypes in the WNBA and compare WNBA players to NBA players, data must be gathered on a seasonal basis. Using Basketball Reference^4^ (BBallRef), player statistics were gathered dating back to 2018. Relevant variables included:
+To define player archetypes in the WNBA and compare WNBA players to NBA players, data must be gathered on a seasonal basis. Using Basketball Reference^4^, player statistics were gathered dating back to 2018 (the first year WNBA play-by-play and shot location became available). Relevant variables included:
 
--   Per 100 possession statistics such as:
+-   **Per 100 possession statistics** such as:
     -   Points, rebounds, assists
     -   Turnovers, field goals made, field goals attempted
-    -   Advanced statistics designed to demonstrate player tendencies and efficiency such as:
+-   **Advanced statistics** designed to demonstrate player tendencies and efficiency such as:
     -   PER, Usage Rate, Win Shares
--   Play by play statistics such as:
+-   **Play by play statistics** such as:
     -   Type of turnover (bad pass, lost ball)
     -   Foul information (fouls drawn, fouls committed)
--   Shooting tendency data such as:
+-   **Shooting tendency** data such as:
     -   Percentage of shots at the rim, percentage of shots from 3
     -   Percentage of shots that were assisted
 
@@ -85,7 +87,7 @@ This data allows both play style and effectiveness to be evaluated and considere
 
 -   Gathered data from the 2018 - 2021 seasons
 -   Players with less than 100 total minutes played were dropped to remove players who've played an insignificant amount of time
-    -   Roughly 10-15% of players were removed based on an ECDF graph
+    -   Roughly 10-15% of players were removed based on minutes played
 -   Removed 3 outliers who did not have a TOT column
 -   Re-labeled all player positions to either "PG", "SG", "SF", "PF", or "C" for point guards, shooting guards, small forwards, power forwards, and centers respectively
 
@@ -93,7 +95,7 @@ This data allows both play style and effectiveness to be evaluated and considere
 
 ## EDA
 
-First, we started by exploring the WNBA dataset to better understand the variation and relationships that exist between the variables:
+Before modeling or clustering, the distributions of variables within the WNBA dataset were examined to better understand the relationships that are present:
 
 ```{r, echo = FALSE, message = FALSE, warning=FALSE}
 # Load Libraries and Data -------------------------------------------------
@@ -297,9 +299,20 @@ To allow for some uncertainty in the clustering results, a Gaussian Mixture Mode
 
 ------------------------------------------------------------------------
 
-## 2. WNBA vs NBA Player Comparisons
+## 2. WNBA vs NBA Play Style Comparisons
 
-In order to develop a model that would receive a WNBA player as input and output 3-5 NBA players who have similar play tendencies, a Gaussian Mixture Model (GMM) was trained using the past 5 seasons of NBA data (2018-2022). In doing so, clusters of NBA players were created, with corresponding probabilities for each player belonging to each cluster. WNBA player profiles consisting of the same variables were then fed into the model, similarly receiving probabilities of belonging to each cluster. To derive the NBA player most similar to a WNBA player, the Euclidean distance between a WNBA player's cluster probabilities and all NBA player's cluster probabilities was calculated. The NBA player with the lowest corresponding distance of probabilities was selected as the comparison for the WNBA player of interest. A GMM was chosen over K-Means clustering to take advantage of soft assignments and the probabilities generated by a GMM.
+Before running a model to derive play style comparisons, variables related to play style (and not results) were selected. These included:
+
+  - Field goal attempts per 100 possessions
+  - Free throw attempts per 100 possessions
+  - Rebounds per 100 possessions
+  - Assist percentage
+  - Steal percentage
+  - Block percentage
+  - Average shot distance
+
+
+To develop a model that outputs an NBA comparison for a WNBA player's play style, a Gaussian Mixture Model (GMM) was trained using the past 5 seasons of NBA data (2018-2022). In doing so, clusters of NBA players were created with corresponding probabilities for each player belonging to each cluster. WNBA player profiles consisting of the same variables were then fed into the model, similarly receiving probabilities of belonging to each cluster. To derive the NBA player most similar to a WNBA player, the Euclidean distance between a WNBA player's cluster probabilities and all NBA player's cluster probabilities was calculated. The NBA player with the lowest corresponding distance of probabilities was selected as the comparison for the WNBA player of interest. A GMM was chosen over K-Means clustering to take advantage of soft assignments and the probabilities generated by a GMM.
 
 These probabilities of an observation being assigned to each cluster were then used to compare players. This was done by computing the Euclidean distance between the cluster probabilities for each observation and taking the 'closest' observation (minimum distance). This allowed a WNBA player to be fed into the model, the distance to be calculated, and to take the 'closest' NBA player and declare that as the player comparison.
 
@@ -340,6 +353,36 @@ These probabilities of an observation being assigned to each cluster were then u
 - Examples?
 
 ---
+
+```{r, echo = FALSE, warning=FALSE, message = FALSE}
+library(gt)
+library(DT)
+comps <- read_csv("data/wnba21_nba22_comps_links.csv")
+
+demo_comps <- comps %>% select(wnba_player, nba_player1, distance, nba_player2, distance2, nba_player3, distance3, nba_player4, distance4) %>% 
+  filter(wnba_player %in% c("Allie Quigley",
+                            "Kelsey Plum",
+                            "Breanna Stewart"))
+
+colnames(demo_comps)[c(1, seq(2, 8, by = 2))] <- c("WNBA Player", 
+                                                   "NBA Comp #1", 
+                                                   "NBA Comp #2", 
+                                                   "NBA Comp #3", 
+                                                   "NBA Comp #4")
+
+demo_comps %>%
+  mutate(across(.cols = starts_with("distance"), .fns = ~round(., digits = 3))) %>%
+  rename(`Distance 1` = "distance",
+         `Distance 2` = "distance2",
+         `Distance 3` = "distance3",
+         `Distance 4` = "distance4") %>%
+  gt() %>%
+  tab_header(
+    title = "Sample of WNBA to NBA Comparisons",
+  )
+
+```
+
 
 # Discussion:
 
