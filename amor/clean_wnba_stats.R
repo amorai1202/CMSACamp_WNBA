@@ -8,11 +8,11 @@ wnba_all_stats_raw <- read_csv("data/wnba_all_stats.csv") #1997-2022
 wnba_seasons <- wnba_all_stats_raw %>% 
   select(-contains("link")) %>%  #remove link column
   mutate(mpg = mp/g) %>%  #add mpg column
-  filter(grepl("2018|2019|2020|2021", season))
+  filter(grepl("2018|2019|2020|2021", season)) 
 
 #ECDF plot of mpg:
 
-wnba_ecdf <- wnba_all_stats %>%  
+wnba_ecdf <- wnba_seasons %>%  
   ggplot(aes(x = mpg)) + 
   stat_ecdf() +
   geom_rug(alpha = 0.3) +

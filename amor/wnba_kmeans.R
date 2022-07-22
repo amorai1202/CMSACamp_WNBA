@@ -1,4 +1,4 @@
-# PURPOSE: Explore clustering with variables chosen by PCA
+# PURPOSE: Explore k-means clustering with variables chosen by PCA
 
 # Load and filter data -----------------------------------------------------------
 
