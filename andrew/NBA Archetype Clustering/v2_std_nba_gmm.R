@@ -231,6 +231,72 @@ for (i in 2:5) {
 }
 
 
+# Trying to get player links into wide dataset for ease of shiny app pictures
+wnba_tmp <- read_csv("data/wnba_all_stats_clean2.csv")
+
+
+# WNBA Links
+
+tmp2 <- wnba_tmp %>% 
+  filter(season == 2021) %>%
+  select(player, link, season) %>%
+  rename(wnba_player = "player") %>%
+  right_join(wide_wnba21_nba22_comps) %>%
+  rename(wnba_link = "link",
+         nba_player1 = "nba_player")
+
+
+# NBA Links
+
+nba_links <- nba_all_stats_filtered %>% 
+  filter(season == 2022) %>% 
+  select(player, link)
+
+tmp3<- tmp2 %>%
+  left_join(nba_links, by = c("nba_player1" = "player")) %>% 
+  left_join(nba_links, by = c("nba_player2" = "player")) %>%
+  left_join(nba_links, by = c("nba_player3" = "player")) %>%
+  left_join(nba_links, by = c("nba_player4" = "player")) %>%
+  left_join(nba_links, by = c("nba_player5" = "player")) %>% 
+  rename(nba_link1 = "link.x",
+         nba_link2 = "link.y",
+         nba_link3 = "link.x.x",
+         nba_link4 = "link.y.y",
+         nba_link5 = "link")
+
+  
+wide_wnba21_nba22_links <- tmp3 %>%
+    # WNBA PLAYER ID
+    separate(wnba_link, sep = "/", into = c("A", "B", "C", "D", "E"), remove = FALSE) %>%
+    separate(E, sep = "\\.", into = c("wnba_id", "F")) %>%
+    select(-c(A:D), -`F`) %>%
+    #NBA PLAYER 1 ID
+    separate(nba_link1, sep = "/", into = c("A", "B", "C", "D"), remove = FALSE) %>%
+    separate(D, sep = "\\.", into = c("nba_id1", "F")) %>%
+    select(-c(A:C), -`F`) %>%
+    # NBA PLAYER 2 ID
+    separate(nba_link2, sep = "/", into = c("A", "B", "C", "D"), remove = FALSE) %>%
+    separate(D, sep = "\\.", into = c("nba_id2", "F")) %>%
+    select(-c(A:C), -`F`) %>%
+    # NBA PLAYER 3 ID
+    separate(nba_link3, sep = "/", into = c("A", "B", "C", "D"), remove = FALSE) %>%
+    separate(D, sep = "\\.", into = c("nba_id3", "F")) %>%
+    select(-c(A:C), -`F`) %>%
+    # NBA PLAYER 4 ID
+    separate(nba_link4, sep = "/", into = c("A", "B", "C", "D"), remove = FALSE) %>%
+    separate(D, sep = "\\.", into = c("nba_id4", "F")) %>%
+    select(-c(A:C), -`F`) %>%
+    # NBA PLAYER 5 ID
+    separate(nba_link5, sep = "/", into = c("A", "B", "C", "D"), remove = FALSE) %>%
+    separate(D, sep = "\\.", into = c("nba_id5", "F")) %>%
+    select(-c(A:C), -`F`) 
+
+write_csv(wide_wnba21_nba22_links, "data/wnba21_nba22_comps_links.csv")
+
+  
+
+    
+
 
 
 
