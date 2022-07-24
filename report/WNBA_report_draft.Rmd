@@ -1,10 +1,12 @@
 ---
 title: "Is Breanna Stewart the Lebron James of the WNBA? Developing WNBA and NBA Archetypes and Playstyle Comparisons"
 author: 
- - Amor Ai^[Carnegie Mellon University, amorai@cmu.edu]
- - Andrew Noecker^[St. Olaf College, noecke2@stolaf.edu]
- - Mykalyster Homberg^[Harvard University, mhombergbertley@college.harvard.edu]
+ - Amor Ai^[Carnegie Mellon University, amorai@cmu.edu], Andrew Noecker^[St. Olaf College, noecke2@stolaf.edu], Mykalyster Homberg^[Harvard University, mhombergbertley@college.harvard.edu]
 date: "`r format(Sys.time(), '%B %d, %Y')`"
+header-includes:
+   - \usepackage[default]{sourcesanspro}
+   - \usepackage[T1]{fontenc}
+mainfont: SourceSansPro
 output: 
   html_document:
     css: style.css
@@ -14,20 +16,15 @@ output:
     toc_float: true
 editor_options: 
   chunk_output_type: console
----
 
-```{css style settings, echo = FALSE}
-blockquote {
-    padding: 2px 2px;
-    margin: 0 0 10px;
-    font-size: 14px;
-    border-left: 5px solid #eee;
-}
-```
+---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+------------------------------------------------------------------------
+
 
 # Introduction:
 
@@ -369,7 +366,7 @@ These probabilities of an observation being assigned to each cluster were then u
 
 ------------------------------------------------------------------------
 
-## 2. Player Comparison: {.tabset .tabset-pills}
+## 2. Player Comparison: {.tabset .tabset-dropdown}
 
 ::: {style="margin-bottom:40px;"}
 :::
@@ -410,17 +407,18 @@ demo_comps %>%
 
 **Initial shiny app examples for the 3 players in the table above:**
 
-### Plum
+### Kelsey Plum
 
 ![](kelsey_plum_demo.png)
 
-### Quigley
+### Allie Quigley
 
 ![](allie_quigley_demo.png)
 
-### Stewart
+### Breanna Stewart
 
 ![](breanna_stewart_demo.png)
+------------------------------------------------------------------------
 
 # Discussion:
 
