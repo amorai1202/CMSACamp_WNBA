@@ -1,38 +1,30 @@
 ---
-title: "WNBA Player Archetypes & Comparisons"
+title: "Is Breanna Stewart the Lebron James of the WNBA? Developing WNBA and NBA Archetypes and Playstyle Comparisons"
 author: 
- - Amor Ai^[Carnegie Mellon University, amorai@cmu.edu]
- - Andrew Noecker^[St. Olaf College, noecke2@stolaf.edu]
- - Mykalyster Homberg^[Harvard University, mhombergbertley@college.harvard.edu]
+ - Amor Ai^[Carnegie Mellon University, amorai@cmu.edu], Andrew Noecker^[St. Olaf College, noecke2@stolaf.edu], Mykalyster Homberg^[Harvard University, mhombergbertley@college.harvard.edu]
 date: "`r format(Sys.time(), '%B %d, %Y')`"
+header-includes:
+   - \usepackage[default]{sourcesanspro}
+   - \usepackage[T1]{fontenc}
+mainfont: SourceSansPro
 output: 
   html_document:
+    css: style.css
     theme: spacelab
     highlight: tango
     toc: true
     toc_float: true
 editor_options: 
   chunk_output_type: console
+
 ---
-
-```{css style settings, echo = FALSE}
-blockquote {
-    padding: 2px 2px;
-    margin: 0 0 10px;
-    font-size: 14px;
-    border-left: 5px solid #eee;
-}
-```
-
-```{r, echo=FALSE}
-htmltools::img(src = knitr::image_uri("wnbalogo.png"), 
-               alt = 'logo', 
-               style = 'position:absolute; top:0; right:0; padding:65px')
-```
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+------------------------------------------------------------------------
+
 
 # Introduction:
 
@@ -52,7 +44,7 @@ Ultimately, we believe that labeling each WNBA player with an archetype and deve
 
 ![](shinyapp.png)
 
----
+------------------------------------------------------------------------
 
 # Data:
 
@@ -91,7 +83,7 @@ This data allows both play style and effectiveness to be evaluated and considere
 -   Removed 3 outliers who did not have a TOT column
 -   Re-labeled all player positions to either "PG", "SG", "SF", "PF", or "C" for point guards, shooting guards, small forwards, power forwards, and centers respectively
 
----
+------------------------------------------------------------------------
 
 ## EDA
 
@@ -258,8 +250,7 @@ astpercent + blkpercent
 
 ```
 
-
----
+------------------------------------------------------------------------
 
 # Methods:
 
@@ -277,25 +268,22 @@ To choose which subset of variables were important in determining the archetypes
     -   Grabbed top 3 drivers in each of the top 10 PC's and removed repeated variables
     -   Checked correlation matrix and filtered out highly correlated variables
 -   Variables from PCA results to use in clustering:
-    -   x3p, distance, trb, orb, ows, ortg, ft, fg, pts, x3par,
-       fga, ftr, pf, tov, drtg, stl, per, blk, ast
+    -   x3p, distance, trb, orb, ows, ortg, ft, fg, pts, x3par, fga, ftr, pf, tov, drtg, stl, per, blk, ast
 
 ### Clustering:
 
 To allow for some uncertainty in the clustering results, a Gaussian Mixture Model (GMM) was used to yield soft assignments for clustering the players.
 
-- 5 clusters created for both the WNBA and NBA
-- Created archetypes by observing and comparing the following statistics from each cluster:
-    - Position distribution 
-    - Shooting distance
-    - Average points
-    - Average free throw attempts, field goal attempts, field goal percentage
-    - Average rebounds (total and offensive), assists, steals, blocks, turnovers, personal fouls
-    - Average field goal attempts between 3-10 feet, 10-16 feet, 16 feet - 3's
-    - Average 3-pointers attempts and percentage, true shooting percentage
-    - Average defensive and offensive rating, win share, and player efficiency rating
-    
-    
+-   5 clusters were created for both the WNBA and NBA
+-   Constructed archetypes by observing and comparing the following statistics from each cluster:
+    -   Position distribution
+    -   Shooting distance
+    -   Average points
+    -   Average free throw attempts, field goal attempts, field goal percentage
+    -   Average rebounds (total and offensive), assists, steals, blocks, turnovers, personal fouls
+    -   Average field goal attempts between 3-10 feet, 10-16 feet, 16 feet - 3's
+    -   Average 3-pointers attempts and percentage, true shooting percentage
+    -   Average defensive and offensive rating, win share, and player efficiency rating
 
 ------------------------------------------------------------------------
 
@@ -303,20 +291,19 @@ To allow for some uncertainty in the clustering results, a Gaussian Mixture Mode
 
 Before running a model to derive play style comparisons, variables related to play style (and not results) were selected. These included:
 
-  - Field goal attempts per 100 possessions
-  - Free throw attempts per 100 possessions
-  - Rebounds per 100 possessions
-  - Assist percentage
-  - Steal percentage
-  - Block percentage
-  - Average shot distance
-
+-   Field goal attempts per 100 possessions
+-   Free throw attempts per 100 possessions
+-   Rebounds per 100 possessions
+-   Assist percentage
+-   Steal percentage
+-   Block percentage
+-   Average shot distance
 
 To develop a model that outputs an NBA comparison for a WNBA player's play style, a Gaussian Mixture Model (GMM) was trained using the past 5 seasons of NBA data (2018-2022). In doing so, clusters of NBA players were created with corresponding probabilities for each player belonging to each cluster. WNBA player profiles consisting of the same variables were then fed into the model, similarly receiving probabilities of belonging to each cluster. To derive the NBA player most similar to a WNBA player, the Euclidean distance between a WNBA player's cluster probabilities and all NBA player's cluster probabilities was calculated. The NBA player with the lowest corresponding distance of probabilities was selected as the comparison for the WNBA player of interest. A GMM was chosen over K-Means clustering to take advantage of soft assignments and the probabilities generated by a GMM.
 
 These probabilities of an observation being assigned to each cluster were then used to compare players. This was done by computing the Euclidean distance between the cluster probabilities for each observation and taking the 'closest' observation (minimum distance). This allowed a WNBA player to be fed into the model, the distance to be calculated, and to take the 'closest' NBA player and declare that as the player comparison.
 
----
+------------------------------------------------------------------------
 
 # Results:
 
@@ -326,33 +313,65 @@ These probabilities of an observation being assigned to each cluster were then u
 
 *5 clusters/archetypes:*
 
-1.
-2.
-3.
-4.
-5.
+1.  RESERVES
+    -   Benchwarmers
+        -   High turnovers & personal fouls
+        -   Lowest field goal percentage, offensive rating, and offensive win shares
+2.  TRADITIONAL BIGS
+    -   Rebounder & rim-protector
+        -   High total and offensive rebounds
+        -   High close distance shots/layups
+        -   High personal fouls
+3.  PRIMARY FACILITATOR
+    -   Ball handler
+        -   High assists & steals
+        -   Versatile shooter
+4.  PRIMARY SCORERS/INITIATORS
+    -   Superstar & shot creator
+        -   Offensive skilled combo-forwards
+        -   Defensive versatility
+        -   Highest usage
+5.  SHOOTING THREAT
+    -   Sharpshooter
+        -   High 3 point attempts and percentage
+        -   Low rebounds
 
 ### NBA
 
-*9 clusters/archetypes:*
+*5 clusters/archetypes:*
 
-1.
-2.
-3.
-4.
-5.
-6. 
-7. 
-8. 
-9. 
+1.  TRADITIONAL BIGS
+    -   Rebounder & rim-protector
+        -   High total and offensive rebounds
+        -   High close distance shots/layups
+        -   High personal fouls
+2.  PRIMARY FACILITATOR & SHOOTER
+    -   Ball handler
+        -   High assists, low rebounds
+        -   High 3 point attempts and percentage
+3.  ROLEPLAYERS
+    -   Versatile wings
+        -   Reliable shooters
+        -   Low usage
+4.  PRIMARY SCORERS/INITIATORS
+    -   Superstars
+        -   Offensive skilled self-creators
+        -   Defensive versatility
+        -   Highest points, assists, usage, free throw attempts
+        -   Highest defensive and offensive win share
+5.  RESERVES
+    -   Benchwarmers
+        -   High turnovers & personal fouls
+        -   Lowest offensive rating, offensive win shares and defensive win shares
 
 ------------------------------------------------------------------------
 
-## 2. Player Comparison:
+## 2. Player Comparison: {.tabset .tabset-dropdown}
 
-- Examples?
+::: {style="margin-bottom:40px;"}
+:::
 
----
+**Table of comparisons for 3 example players:**
 
 ```{r, echo = FALSE, warning=FALSE, message = FALSE}
 library(gt)
@@ -383,27 +402,52 @@ demo_comps %>%
 
 ```
 
+::: {style="margin-bottom:50px;"}
+:::
+
+**Initial shiny app examples for the 3 players in the table above:**
+
+### Kelsey Plum
+
+![](kelsey_plum_demo.png)
+
+### Allie Quigley
+
+![](allie_quigley_demo.png)
+
+### Breanna Stewart
+
+![](breanna_stewart_demo.png)
+------------------------------------------------------------------------
 
 # Discussion:
 
+-   The sample player comparisons listed in the table above do seem to pass the relative eye test. For example, Allie Quigley is known as a sharpshooter, very similar to her top NBA comparison Payton Pritchard
+-   The 10 archetypes defined using results-based statistics suggest that NBA and WNBA have nearly identical archetypes
+-   MORE TO BE ADDED LATER
+
 ### Limitations
+
+-   The process of defining archetypes following clustering was not precise: it relied mostly on a combination of cluster averages and knowledge of basketball
+-   Calculating the Euclidean distance of cluster probabilities could lead to some comparisons that are considered erroneous
+-   Trying to compare by play style across the WNBA and NBA is a flawed premise because the general style of play is different (e.g lob threats in the NBA)
 
 ### Next steps:
 
 -   Produce a metric, regularized adjusted plus-minus (RAPM), to measure attributes and provide better evaluations of WNBA players
     -   Utilize RAPM to create future projections of players
--   
+-   Allow for more user interactions within the app
+    -   Add ability for user inputs
+-   Try utilizing a decision tree to create comparisons
+-   Create a team building player-type evaluation tool
 
----
+------------------------------------------------------------------------
 
 # Acknowledgements:
 
--   Max Horowitz
--   Ron Yurko
+We would like to first express our gratitude toward Carnegie Mellon's Statistics & Data Science Department for providing us a great opportunity to complete a project on sports analytics. In particular, this work would not have been possible without the valuable guidance and support of Dr. Ron Yurko, the lead instructor and director of CMSAC, as well as Maxsim Horowitz, senior data analyst for the Atlanta Hawks, for advising our project. We are also grateful to all of those with whom we have had the pleasure to work during this and other related projects, including our fellow students and teaching assistants.
 
-
-
----
+------------------------------------------------------------------------
 
 # References:
 

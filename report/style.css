@@ -1,0 +1,32 @@
+/*----------LOGO above TOC---------*/
+
+#TOC::before {
+  content: "";
+  display: block;
+  height: 225px;
+  margin: 2em 20px 40px 20px;
+  background-image: url("nba-wnba-logo.png");
+  background-size: contain;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+
+
+
+blockquote {
+    padding: 2px 2px;
+    margin: 0 0 10px;
+    font-size: 14px;
+    border-left: 5px solid #eee;
+}
+
+
+h1 { /*headers*/
+  text-align: center;
+  font-weight: bold;
+}
+
+h4 { /*authors and date*/
+  text-align: center;
+}
+
