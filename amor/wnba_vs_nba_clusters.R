@@ -91,10 +91,10 @@ nba_std <- nba_select_stats %>%
 
 # Clustering --------------------------------------------------------------
 
-init_wnba_mclust <- Mclust(wnba_std)
-init_nba_mclust <- Mclust(nba_std)
-write_rds(init_wnba_mclust, "models/final_wnba_mclust.rds")
-write_rds(init_nba_mclust, "models/final_nba_mclust.rds")
+# init_wnba_mclust <- Mclust(wnba_std)
+# init_nba_mclust <- Mclust(nba_std)
+# write_rds(init_wnba_mclust, "models/final_wnba_mclust.rds")
+# write_rds(init_nba_mclust, "models/final_nba_mclust.rds")
 
 final_wnba_mclust <- readRDS("models/final_wnba_mclust.rds")
 final_nba_mclust <- readRDS("models/final_nba_mclust.rds")
@@ -121,6 +121,7 @@ wnba_cluster <- wnba_cluster %>%
 
 nba_cluster <- nba_cluster %>% 
   select(player_season, cluster, uncertainty, everything())
+
 
 #view(wnba_cluster)
 #view(nba_cluster)
@@ -640,6 +641,8 @@ nba_pf <- nba_cluster %>%
   theme_bw() 
 
 wnba_pf + nba_pf
+
+
 
 
 
