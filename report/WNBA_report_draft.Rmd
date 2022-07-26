@@ -16,7 +16,6 @@ output:
     toc_float: true
 editor_options: 
   chunk_output_type: console
-
 ---
 
 ```{r setup, include=FALSE}
@@ -24,7 +23,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ------------------------------------------------------------------------
-
 
 # Introduction:
 
@@ -39,10 +37,6 @@ Over the past decade, with the growing influence of social media and heightened 
 >     -   Each WNBA player (that has played significant minutes/games) will be matched with 3-5 similar NBA players based SOLELY on their play style
 
 Ultimately, we believe that labeling each WNBA player with an archetype and developing an NBA player comparison can boost year-round engagement and bring the WNBA into the spotlight and keep them there for years to come.
-
-### Shiny app concept art:
-
-![](shinyapp.png)
 
 ------------------------------------------------------------------------
 
@@ -83,11 +77,11 @@ This data allows both play style and effectiveness to be evaluated and considere
 -   Removed 3 outliers who did not have a TOT column
 -   Re-labeled all player positions to either "PG", "SG", "SF", "PF", or "C" for point guards, shooting guards, small forwards, power forwards, and centers respectively
 
-The following visualizations and remaining analyses are based on these subsets of players. 
+The following visualizations and remaining analyses are based on these subsets of players.
 
 ------------------------------------------------------------------------
 
-## EDA
+## Exploratory Data Analysis (EDA)
 
 Before modeling or clustering, the distributions of variables within the WNBA dataset were examined to better understand the relationships that are present:
 
@@ -139,7 +133,7 @@ wnba_pos %>%
 wnba_pos %>% 
   filter(season <= 2021) %>%
   mutate(mpg = mp/g) %>%
-  ggplot(aes(x = mpg, color = pos)) + 
+  ggplot(aes(x = mpg, color = pos, fill = pos)) + 
   geom_density(alpha = 0.2) + 
   theme_bw() + 
   scale_y_continuous(expand = expansion(mult = c(0, 0.05)))+
@@ -280,8 +274,7 @@ To choose which subset of variables were important in determining the archetypes
 
 To allow for some uncertainty in the clustering results, a Gaussian Mixture Model (GMM) was used to yield soft assignments for clustering the players.
 
--   5 clusters were created for both the WNBA and NBA
--   Constructed archetypes by observing and comparing the following statistics from each cluster:
+-   Constructed archetypes by observing and comparing predominantly performance-based statistics from each cluster:
     -   Position distribution
     -   Shooting distance
     -   Average points
@@ -309,71 +302,348 @@ To develop a model that outputs an NBA comparison for a WNBA player's play style
 
 These probabilities of an observation being assigned to each cluster were then used to compare players. This was done by computing the Euclidean distance between the cluster probabilities for each observation and taking the 'closest' observation (minimum distance). This allowed a WNBA player to be fed into the model, the distance to be calculated, and to take the 'closest' NBA player and declare that as the player comparison.
 
-
 ------------------------------------------------------------------------
 
 # Results:
 
 ## 1. Archetypes: {.tabset .tabset-pills}
 
+Applying a Gaussian Mixture Model to the subset of variables informed by using PCA, 5 clusters were returned for both the WNBA and NBA.
+
+performance-based variables 5 clusters were created for both the WNBA and NBA The full descriptions of the archetypes are displayed below:
+
 ### WNBA
 
-*5 clusters/archetypes:*
+*5 clusters:*
 
 1.  RESERVES
     -   Benchwarmers
         -   High turnovers & personal fouls
         -   Lowest field goal percentage, offensive rating, and offensive win shares
+        -   Examples\*: Stephanie Watts, Kristine Anigwe
 2.  TRADITIONAL BIGS
     -   Rebounder & rim-protector
         -   High total and offensive rebounds
         -   High close distance shots/layups
         -   High personal fouls
-3.  PRIMARY FACILITATOR
+        -   Examples: Brianna Turner, Monique Billings\
+3.  FACILITATORS/SHOOTERS
     -   Ball handler
         -   High assists & steals
         -   Versatile shooter
+        -   Examples: Kelsey Plum, Jewell Loyd
 4.  PRIMARY SCORERS/INITIATORS
     -   Superstar & shot creator
         -   Offensive skilled combo-forwards
         -   Defensive versatility
         -   Highest usage
+        -   Examples: A'ja Wilson, Breanna Stewart
 5.  SHOOTING THREAT
     -   Sharpshooter
         -   High 3 point attempts and percentage
         -   Low rebounds
+        -   Examples: Sue Bird, Kia Nurse
+
+\*Player examples are from the 2021 season
+
+-----
 
 ### NBA
 
-*5 clusters/archetypes:*
+*5 clusters:*
 
 1.  TRADITIONAL BIGS
     -   Rebounder & rim-protector
         -   High total and offensive rebounds
         -   High close distance shots/layups
         -   High personal fouls
-2.  PRIMARY FACILITATOR & SHOOTER
+        -   Examples\*: Rudy Gobert, DeAndre Jordan
+2.  FACILITATORS/SHOOTERS
     -   Ball handler
         -   High assists, low rebounds
         -   High 3 point attempts and percentage
+        -   Examples: Duncan Robinson, Buddy Hield
 3.  ROLEPLAYERS
     -   Versatile wings
         -   Reliable shooters
         -   Low usage
+        -   Examples: Robert Covington, Royce O'Neale
 4.  PRIMARY SCORERS/INITIATORS
     -   Superstars
         -   Offensive skilled self-creators
         -   Defensive versatility
         -   Highest points, assists, usage, free throw attempts
         -   Highest defensive and offensive win share
+        -   Examples: Giannis Antetokounmpo, Stephen Curry
 5.  RESERVES
     -   Benchwarmers
         -   High turnovers & personal fouls
         -   Lowest offensive rating, offensive win shares and defensive win shares
+        -   Examples: Luke Kornet, Frank Ntilikina
+
+\*Player examples are from the 2021 season
+
+-----
+
+## 
+
+The following visualizations helped distinguish clusters and inform the archetype labeling:
+
+- *Variables are all player per 100 possession statistics*
+
+**Points & 3 point attempts:**
+
+```{r, echo = FALSE, message = FALSE, warning=FALSE}
+#Load data
+
+wnba_cluster <- read_csv("data/wnba_archetypes.csv")
+nba_cluster <- read_csv("data/nba_archetypes.csv")
+```
+
+```{r cluster eda, fig.width=15, fig.height=5, echo = FALSE, message = FALSE, warning=FALSE}
+
+#Pts & x3pa
+wnba_pts_x3pa <- wnba_cluster %>%
+  ggplot(aes(x = pts, y = x3p,
+             color = as.factor(cluster))) +
+  geom_point(alpha = 0.4) + 
+  ggthemes::scale_color_colorblind() +
+  theme_bw() +
+  theme(legend.position = "right") +
+  labs(x = "Points per 100 possessions",
+       y = "3 point attempts",
+       fill = "cluster",
+       colour = "WNBA Archetypes") 
+
+nba_pts_x3pa <- nba_cluster %>%
+  ggplot(aes(x = pts, y = x3p,
+             color = as.factor(cluster))) +
+  geom_point(alpha = 0.4) + 
+  ggthemes::scale_color_colorblind() +
+  theme_bw() +
+  theme(legend.position = "right") +
+  labs(x = "Points per 100 possessions",
+       y = "3 point attempts",
+       fill = "cluster",
+       colour = "NBA Archetypes")
+
+library(patchwork)
+
+wnba_pts_x3pa + nba_pts_x3pa + plot_layout(ncol = 2)
+
+```
+
+**Rebounds & Assists:**
+
+```{r, fig.width=15, fig.height=5, echo = FALSE, message = FALSE, warning=FALSE}
+#Rebounds/assists
+
+wnba_trb_ast <- wnba_cluster %>%
+  ggplot(aes(x = trb, y = ast,
+             color = as.factor(cluster))) +
+  geom_point(alpha = 0.4) + 
+  ggthemes::scale_color_colorblind() +
+  theme_bw() +
+  theme(legend.position = "right") +
+  labs(x = "Total rebounds",
+       y = "Assists",
+       fill = "cluster",
+       colour = "WNBA Archetypes") 
+
+nba_trb_ast <- nba_cluster %>%
+  ggplot(aes(x = trb, y = ast,
+             color = as.factor(cluster))) +
+  geom_point(alpha = 0.4) + 
+  ggthemes::scale_color_colorblind() +
+  theme_bw() +
+  theme(legend.position = "right") +
+  labs(x = "Total rebounds",
+       y = "Assists",
+       fill = "cluster",
+       colour = "NBA Archetypes")
+
+wnba_trb_ast + nba_trb_ast + plot_layout(ncol = 2)
+```
+
+**Usage Percentage & Player Efficiency Rating (PER):**
+
+- *Usage % = an estimate of the percentage of team plays used by a player when they were on the floor*
+
+- *PER = a measure of per-minute production standardized such that the league average is 15*
+
+```{r, fig.width=15, fig.height=5, echo = FALSE, message = FALSE, warning=FALSE}
+
+#Usage/PER
+
+wnba_usage <- wnba_cluster %>%
+  ggplot(aes(x = usgpercent, y = per,
+             color = as.factor(cluster))) +
+  geom_point(alpha = 0.4) + 
+  ggthemes::scale_color_colorblind() +
+  theme_bw() +
+  theme(legend.position = "right") +
+  labs(x = "Usage %",
+       y = "PER",
+       fill = "cluster",
+       colour = "WNBA Archetypes") 
+
+nba_usage <- nba_cluster %>%
+  ggplot(aes(x = usgpercent, y = per,
+             color = as.factor(cluster))) +
+  geom_point(alpha = 0.4) + 
+  ggthemes::scale_color_colorblind() +
+  theme_bw() +
+  theme(legend.position = "right") +
+  labs(x = "Usage %",
+       y = "PER",
+       fill = "cluster",
+       colour = "NBA Archetypes")
+
+wnba_usage + nba_usage + plot_layout(ncol = 2)
+```
+
+**Offensive & Defensive Win Share (OWS/DWS):**
+
+- *OWS = an estimate of the number of wins contributed by a player due to offense*
+
+- *DWS = an estimate of the number of wins contributed by a player due to defense*
+
+```{r, fig.width=15, fig.height=5, echo = FALSE, message = FALSE, warning=FALSE}
+
+#OWS/DWS
+
+wnba_ws <- wnba_cluster %>%
+  ggplot(aes(x = ows, y = dws,
+             color = as.factor(cluster))) +
+  geom_point(alpha = 0.4) + 
+  ggthemes::scale_color_colorblind() +
+  theme_bw() +
+  theme(legend.position = "right") +
+  labs(x = "Offensive Win Share",
+       y = "Defensive Win Share",
+       fill = "cluster",
+       colour = "WNBA Archetypes") 
+
+nba_ws <- nba_cluster %>%
+  ggplot(aes(x = ows, y = dws,
+             color = as.factor(cluster))) +
+  geom_point(alpha = 0.4) + 
+  ggthemes::scale_color_colorblind() +
+  theme_bw() +
+  theme(legend.position = "right") +
+  labs(x = "Offensive Win Share",
+       y = "Defensive Win Share",
+       fill = "cluster",
+       colour = "NBA Archetypes")
+
+wnba_ws + nba_ws + plot_layout(ncol = 2)
+
+```
+
+-----
+
+
+**UNCERTAINTY PLOTS**
+
+```{r uncertainty, echo = FALSE, message = FALSE, warning=FALSE}
+wnba_cluster <- read_csv("data/wnba_archetypes.csv")
+nba_cluster <- read_csv("data/nba_archetypes.csv")
+
+wnba_cluster %>%
+  filter(season == 2021) %>%
+  group_by(cluster) %>%
+  arrange(desc(uncertainty)) %>%
+  slice(1:3) %>%
+  ggplot(aes(y = uncertainty,
+             x = reorder(player,
+                         uncertainty))) +
+  geom_point() +
+  coord_flip() +
+  theme_bw() +
+  theme(strip.background = element_blank(),
+        plot.title = element_text(hjust = 0.5, size = 11)) + 
+  facet_wrap(~ cluster,
+             scales = 'free_y', nrow = 4) + 
+  labs(y = "Uncertainty",
+       x = "Player",
+       title = "2021 WNBA players with highest uncertainty when clustering by performance variables")
+
+nba_cluster %>%
+  filter(season == 2021) %>%
+  group_by(cluster) %>%
+  arrange(desc(uncertainty)) %>%
+  slice(1:3) %>%
+  ggplot(aes(y = uncertainty,
+             x = reorder(player,
+                         uncertainty))) +
+  geom_point() +
+  coord_flip() +
+  theme_bw() +
+  theme(strip.background = element_blank(),
+        plot.title = element_text(hjust = 0.5, size = 11)) + 
+  facet_wrap(~ cluster,
+             scales = 'free_y', nrow = 4) + 
+  labs(y = "Uncertainty",
+       x = "Player",
+       title = "2021 NBA players with highest uncertainty when clustering by perforamance variables")
+
+
+```
 
 ------------------------------------------------------------------------
 
 ## 2. Player Comparison: {.tabset .tabset-dropdown}
+
+**UNCERTAINTY PLOTS**
+
+```{r, uncertainty plots, echo = FALSE, message = FALSE, warning=FALSE }
+nba_playstyle_clusters <- read_csv("data/nba_playstyle_clusters.csv")
+wnba_playstyle_clusters <- read_csv("data/wnba_playstyle_clusters.csv")
+
+wnba_playstyle_clusters %>%
+  rename(cluster = 'pred_class') %>%
+  filter(season == 2021) %>%
+  group_by(cluster) %>%
+  arrange(desc(uncertainty)) %>%
+  slice(1:3) %>%
+  ggplot(aes(y = uncertainty,
+             x = reorder(player,
+                         uncertainty))) +
+  geom_point() +
+  coord_flip() +
+  theme_bw() +
+  theme(strip.background = element_blank(),
+        plot.title = element_text(hjust = 0.5, size = 11)) + 
+  facet_wrap(~ cluster,
+             scales = 'free_y', nrow = 4) + 
+  labs(y = "Uncertainty",
+       x = "Player",
+       title = "2021 WNBA players with highest uncertainty when clustering by playstyle variables")
+
+nba_playstyle_clusters %>%
+  rename(cluster = 'pred_class') %>%
+  filter(season == 2022) %>%
+  group_by(cluster) %>%
+  arrange(desc(uncertainty)) %>%
+  slice(1:3) %>%
+  ggplot(aes(y = uncertainty,
+             x = reorder(player,
+                         uncertainty))) +
+  geom_point() +
+  coord_flip() +
+  theme_bw() +
+  theme(strip.background = element_blank(),
+        plot.title = element_text(hjust = 0.5, size = 11)) + 
+  facet_wrap(~ cluster,
+             scales = 'free_y', nrow = 4) + 
+  labs(y = "Uncertainty",
+       x = "Player",
+       title = "2022 NBA players with highest uncertainty when clustering by playstyle variables")
+
+```
+
+------
+
 
 ::: {style="margin-bottom:40px;"}
 :::
@@ -424,8 +694,7 @@ demo_comps %>%
 
 ### Breanna Stewart
 
-![](breanna_stewart_demo.png)
-------------------------------------------------------------------------
+## ![](breanna_stewart_demo.png)
 
 # Discussion:
 
