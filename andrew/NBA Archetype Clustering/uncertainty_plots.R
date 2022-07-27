@@ -97,3 +97,31 @@ nba_playstyle_clusters %>%
   labs(y = "Uncertainty",
        x = "Player",
        title = "2022 NBA players with highest uncertainty when clustering by playstyle variables")
+
+nba_all_stats_raw <- read_csv("data/nba_all_stats.csv")
+
+
+tot_players <- nba_all_stats_raw %>% filter(tm == "TOT")
+
+tot_players <- tot_players %>%
+  unite("player_season", c(player, season), remove = FALSE)
+
+nba_all_stats_raw <- nba_all_stats_raw %>% 
+  unite("player_season", c(player, season), remove = FALSE)
+
+
+nba_all_stats <- nba_all_stats_raw %>%
+  filter(!(player_season %in% tot_players$player_season)) %>% 
+  bind_rows(tot_players)
+
+# Remove some weird outliers who didn't have a TOT column
+nba_all_stats <- nba_all_stats %>%
+  filter(!(player %in% c("Chris Johnson", "Marcus Williams", "Tony Mitchell")))
+
+nba_all_stats %>%
+  mutate(mpg = mp/g) %>%
+  filter(mp > 100,
+         season >= 2018, season < 2022)
+
+
+
