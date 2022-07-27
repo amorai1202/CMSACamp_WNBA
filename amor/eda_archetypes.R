@@ -90,15 +90,15 @@ nba_cluster <- nba_cluster %>%
 
 # Rename clusters ----------------------------------------------------------
 
-# wnba_cluster <- wnba_cluster %>% 
+# wnba_cluster <- wnba_cluster %>%
 # mutate(cluster = case_when(cluster == 1 ~ "Reserves",
 #                            cluster == 2 ~ "Traditional Bigs",
-#                            cluster == 3 ~ "Facilitors/Shooters",
+#                            cluster == 3 ~ "Facilitators/Shooters",
 #                            cluster == 4 ~ "Primary Scorers/Initiators",
 #                            cluster == 5 ~ "Shooting Threats"))
-# nba_cluster <- nba_cluster %>% 
+# nba_cluster <- nba_cluster %>%
 #   mutate(cluster = case_when(cluster == 1 ~ "Traditional Bigs",
-#                              cluster == 2 ~ "Facilitors/Shooters",
+#                              cluster == 2 ~ "Facilitators/Shooters",
 #                              cluster == 3 ~ "Roleplayers",
 #                              cluster == 4 ~ "Primary Scorers/Initiators",
 #                              cluster == 5 ~ "Reserves"))
@@ -113,22 +113,22 @@ nba_cluster <- read_csv("data/nba_archetypes.csv")
 
 # Try clustvarsel ---------------------------------------------------------
 
-library(clustvarsel)
-set.seed(2001)
-
-##STANDARDIZE!!
-
-wnba_select_stats <- wnba_all_stats %>% 
-  dplyr::select(shoot_fouls_drawn, x3p, 
-                distance, trb, orb, ows, oncourt, ws_40, 
-                ortg, ft, fg, pts, x3par, shoot_fouls_committed, 
-                fga, ftr, pf, tov, drtg, stl, per, blk, ast, on_off) 
-
-wnba_std <- wnba_select_stats %>%
-  mutate(across(.cols = (1:24), .fns = scale)) %>%
-  mutate(across(.cols = (1:24), .fns = as.numeric))
-
-init_wnba_clust <- clustvarsel(wnba_std) #to see which variables were picked first
+# library(clustvarsel)
+# set.seed(2001)
+# 
+# ##STANDARDIZE!!
+# 
+# wnba_select_stats <- wnba_all_stats %>% 
+#   dplyr::select(shoot_fouls_drawn, x3p, 
+#                 distance, trb, orb, ows, oncourt, ws_40, 
+#                 ortg, ft, fg, pts, x3par, shoot_fouls_committed, 
+#                 fga, ftr, pf, tov, drtg, stl, per, blk, ast, on_off) 
+# 
+# wnba_std <- wnba_select_stats %>%
+#   mutate(across(.cols = (1:24), .fns = scale)) %>%
+#   mutate(across(.cols = (1:24), .fns = as.numeric))
+# 
+# init_wnba_clust <- clustvarsel(wnba_std) #to see which variables were picked first
 
 # Cluster EDA -------------------------------------------------------------
 

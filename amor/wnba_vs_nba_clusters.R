@@ -106,7 +106,7 @@ wnba_cluster <- wnba_all_stats %>%
          uncertainty =
            final_wnba_mclust$uncertainty) %>%
   group_by(cluster) %>%
-  arrange(uncertainty)
+  arrange(desc(uncertainty)) 
 
 nba_cluster <- nba_all_stats %>%
   mutate(cluster =
@@ -114,7 +114,8 @@ nba_cluster <- nba_all_stats %>%
          uncertainty =
            final_nba_mclust$uncertainty) %>%
   group_by(cluster) %>%
-  arrange(uncertainty)
+  arrange(uncertainty) %>% 
+  
 
 wnba_cluster <- wnba_cluster %>% 
   select(player_season, cluster, uncertainty, everything())
