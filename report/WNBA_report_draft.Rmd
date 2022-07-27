@@ -26,15 +26,15 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introduction:
 
-Over the past decade, with the growing influence of social media and heightened popularity of global stars, interest in women's sports has skyrocketed. However, even with the appearance of high-profile campaigns for equity in sports^1^, it has nonetheless been difficult to cultivate an audience and build a market for women's sports when they receive minimal media coverage compared to their male counterparts^2^. Although major tournaments, such as the WNBA Finals, are strong pulls for sports enthusiasts, the lack of nationally televised games and limited marketing budgets to showcase the players throughout the year has been a barrier for sports fans --- especially established NBA fans --- to consistently engage with the WNBA even when they are interested. Furthermore, although we have seen how statistics can fuel sports passion and storytelling, it was only recently that data and advanced statistics for the WNBA became easily accessible to the public^3^. Therefore, we seek to not only provide more convenient and accessible information on the WNBA players, but to also promote sustained fan engagement and interactions with the league as well.
+Over the past decade, interest in women's sports has skyrocketed with the growing influence of social media and heightened popularity of global stars. However, even with the appearance of high-profile campaigns for equity in sports^1^, it has nonetheless been difficult to cultivate an audience and build a market for women's sports when they receive minimal media coverage compared to their male counterparts^2^. Although major tournaments such as the WNBA Finals are strong pulls for sports enthusiasts, the lack of nationally televised games and limited marketing budgets to showcase the players throughout the year has been a barrier for sports fans --- especially established NBA fans --- to consistently engage with the WNBA even when they are interested. Furthermore, although we have seen how statistics can fuel sports passion and storytelling, it was only recently that data and advanced statistics for the WNBA became easily accessible to the public^3^. Therefore, we seek to not only provide more convenient and accessible information on the WNBA players, but to also promote sustained fan engagement and interactions with the league as well.
 
 **Our project aims to make the following contributions, which will be displayed in a public facing Shiny App:**
 
-> 1.  Develop archetypes of current WNBA players based on each player's abilities and overall result/performance-based statistics
->     -   Conduct archetype exploration on NBA players using the same variables to discover similarities and differences in the type of players between the respective leagues
+> 1.  Develop archetypes of current WNBA players based on each player's abilities and overall performance-based statistics
+>     -   Perform the same exploration on NBA players using the same variables to discover similarities and differences in the type of players between the respective leagues
 
-> 2.  Draw comparisons between WNBA players to NBA players
->     -   Each WNBA player (that has played significant minutes/games) will be matched with 3-5 similar NBA players based SOLELY on their tendencies/playstyle
+> 2.  Draw comparisons between WNBA players and NBA players
+>     -   Each WNBA player with sufficient minutes will be matched with 4 similar NBA players based SOLELY on their tendencies and playstyle
 
 Ultimately, we believe that labeling each WNBA player with an archetype and developing an NBA player comparison can boost year-round engagement and bring the WNBA into the spotlight and keep them there for years to come.
 
@@ -42,7 +42,7 @@ Ultimately, we believe that labeling each WNBA player with an archetype and deve
 
 # Data:
 
-To define player archetypes in the WNBA and compare WNBA players to NBA players, data must be gathered on a seasonal basis. Using Basketball Reference^4^, player statistics were gathered dating back to 2018 (the first year WNBA play-by-play and shot location became available). Relevant variables included:
+To define player archetypes in the WNBA and compare WNBA players to NBA players, data must be gathered on a seasonal basis. Using Basketball Reference^4^, player statistics were gathered dating back to 2018 (the first year WNBA play-by-play and shot location became available). One observation represented a player's statistics for a single season. Relevant variables included:
 
 -   **Per 100 possession statistics** such as:
     -   Points, rebounds, assists
@@ -88,7 +88,7 @@ The following visualizations and remaining analyses are based on these subsets o
 
 ## Exploratory Data Analysis (EDA)
 
-Before modeling or clustering, the distributions of variables within the WNBA dataset were examined to better understand the relationships that are present:
+Before modeling, the distributions of variables within the WNBA dataset were examined to better understand the relationships that are present:
 
 ```{r, echo = FALSE, message = FALSE, warning=FALSE}
 # Load Libraries and Data -------------------------------------------------
@@ -267,19 +267,21 @@ To choose which subset of variables were important in determining the archetypes
 
 -   Filtering WNBA all stats columns before PCA:
     -   Only used data from the 2021 season
-    -   Filtered out non-numeric, percentages, and highly correlated variables (i.e., fgpercent, fga_2p, corner_3s_attempt)
+    -   Filtered out non-numeric, percentages, and highly correlated variables (i.e., FG %, 2 point FG attempts, corner 3 attempts)
 -   PCA results:
     -   Top 10 dimensions explain 90% of the variability
     -   Grabbed top 3 drivers in each of the top 10 PC's and removed repeated variables
     -   Checked correlation matrix and filtered out highly correlated variables
--   Variables from PCA results to use in clustering:
-    -   x3p, distance, trb, orb, ows, ortg, ft, fg, pts, x3par, fga, ftr, pf, tov, drtg, stl, per, blk, ast
+-   Using PCA results, 19 variables were chosen to use in clustering:
+    -   Examples: average shot distance, total rebounds per 100 possessions, field goals made per 100 possessions
+    
+<!-- x3p, distance, trb, orb, ows, ortg, ft, fg, pts, x3par, fga, ftr, pf, tov, drtg, stl, per, blk, ast -->
 
 ### Clustering:
 
 To allow for some uncertainty in the clustering results, a Gaussian Mixture Model (GMM) was used to yield soft assignments for clustering the players.
 
--   Constructed archetypes by observing and comparing predominantly results or performance-based statistics from each cluster:
+-   Constructed archetypes by observing and comparing predominantly performance-based statistics from each cluster:
     -   Position distribution
     -   Shooting distance
     -   Average points
@@ -293,7 +295,7 @@ To allow for some uncertainty in the clustering results, a Gaussian Mixture Mode
 
 ## 2. WNBA vs NBA Playstyle Comparisons
 
-Before running a model to derive playstyle comparisons, variables related to playstyle (and not results) were selected. These included:
+Before running a model to derive playstyle comparisons, variables related to player tendencies and playstyles were selected. These included:
 
 -   Field goal attempts per 100 possessions
 -   Free throw attempts per 100 possessions
@@ -304,9 +306,7 @@ Before running a model to derive playstyle comparisons, variables related to pla
 -   Block percentage
 -   Average shot distance
 
-To develop a model that outputs an NBA comparison for a WNBA player's playstyle, a Gaussian Mixture Model (GMM) was trained using the past 5 seasons of NBA data (2018-2022). In doing so, clusters of NBA players were created with corresponding probabilities for each player belonging to each cluster. WNBA player profiles consisting of the same variables were then fed into the model, similarly receiving probabilities of belonging to each cluster. To derive the NBA player most similar to a WNBA player, the Euclidean distance between a WNBA player's cluster probabilities and all NBA player's cluster probabilities was calculated. The NBA player with the lowest corresponding distance of probabilities was selected as the comparison for the WNBA player of interest. A GMM was chosen over K-Means clustering to take advantage of soft assignments and the probabilities generated by a GMM.
-
-These probabilities of an observation being assigned to each cluster were then used to compare players. This was done by computing the Euclidean distance between the cluster probabilities for each observation and taking the 'closest' observation (minimum distance). This allowed a WNBA player to be fed into the model, the distance to be calculated, and to take the 'closest' NBA player and declare that as the player comparison.
+To develop a model that outputs an NBA comparison for a WNBA player's playstyle, a Gaussian Mixture Model (GMM) was trained using the past 5 seasons of NBA data (2018-2022). In doing so, clusters of NBA players were created with corresponding probabilities for each player belonging to each cluster. WNBA player profiles consisting of the same variables were then fed into the model, similarly receiving probabilities of belonging to each cluster. To derive the NBA player most similar to a WNBA player, the Euclidean distance between a WNBA player's cluster probabilities and all NBA player's cluster probabilities was calculated. The NBA players with the lowest corresponding distances of probabilities were selected as the comparisons for the WNBA player of interest. A GMM was chosen over K-Means clustering to take advantage of soft assignments and the probabilities generated by a GMM.
 
 ------------------------------------------------------------------------
 
@@ -314,7 +314,7 @@ These probabilities of an observation being assigned to each cluster were then u
 
 ## 1. Developing Archetypes: {.tabset .tabset-pills}
 
-After applying a Gaussian Mixture Model to the subset of variables informed by using PCA, 5 clusters were returned for both the WNBA and NBA. Through the amalgamation of basketball knowledge and meticulously observing and comparing the cluster averages on all the performance-based variables in our datasets, simple archetype labels were placed on the clusters in each league. After this process, our results indicate the archetypes between the leagues are nearly identical — both the WNBA and NBA have reserves, traditional bigs, facilitators/shooters, and primary scores/initiators as 4 of their 5 clusters. with the only divergence behind a cluster of players who were shooting threats and a group who were roleplayers for the WNBA and NBA respectively. 
+After applying a Gaussian Mixture Model to the subset of variables informed by using PCA, 5 clusters were returned for both the WNBA and NBA. Through the amalgamation of basketball knowledge and meticulously observing and comparing the cluster averages on all performance-based variables in our datasets, simple archetype labels were placed on the clusters in each league. After this process, our results indicated that the archetypes between the leagues were nearly identical — both the WNBA and NBA have reserves, traditional bigs, facilitators/shooters, and primary scores/initiators as 4 of their 5 clusters. The only divergence was a 5th WNBA cluster labeled shooting threats compared to a 5th NBA cluster labeled roleplayers. 
 
 The full descriptions of the archetypes are displayed below:
 
@@ -358,13 +358,13 @@ The full descriptions of the archetypes are displayed below:
     -   Benchwarmers
         -   High turnovers & personal fouls
         -   Lowest offensive rating, offensive win shares and defensive win shares
-        -   Examples: Luke Kornet, Frank Ntilikina
+        -   Examples\*: Luke Kornet, Frank Ntilikina
 2.  TRADITIONAL BIGS
     -   Rebounder & rim-protector
         -   High total and offensive rebounds
         -   High close distance shots/layups
         -   High personal fouls
-        -   Examples\*: Rudy Gobert, DeAndre Jordan
+        -   Examples: Rudy Gobert, DeAndre Jordan
 3.  FACILITATORS/SHOOTERS
     -   Ball handler
         -   High assists, low rebounds
@@ -391,7 +391,7 @@ The full descriptions of the archetypes are displayed below:
 
 The following visualizations helped distinguish clusters and inform the archetype labeling:
 
-- *Points, 3 point attempts, rebounds, and assists are all player per 100 possession statistics*
+\**Points, 3 point attempts, rebounds, and assists are all player per 100 possession statistics*
 
 **Points & 3 point attempts:**
 
@@ -414,8 +414,9 @@ wnba_pts_x3pa <- wnba_cluster %>%
   theme(legend.position = "right") +
   labs(x = "Points",
        y = "3 point attempts",
+       title = "WNBA",
        fill = "cluster",
-       colour = "WNBA Archetypes") 
+       colour = "Archetypes") 
 
 nba_pts_x3pa <- nba_cluster %>%
   ggplot(aes(x = pts, y = x3p,
@@ -426,8 +427,9 @@ nba_pts_x3pa <- nba_cluster %>%
   theme(legend.position = "right") +
   labs(x = "Points",
        y = "3 point attempts",
+       title = "NBA",
        fill = "cluster",
-       colour = "NBA Archetypes")
+       colour = "Archetypes")
 
 library(patchwork)
 
@@ -449,8 +451,9 @@ wnba_trb_ast <- wnba_cluster %>%
   theme(legend.position = "right") +
   labs(x = "Total rebounds",
        y = "Assists",
+       title = "WNBA",
        fill = "cluster",
-       colour = "WNBA Archetypes") 
+       colour = "Archetypes") 
 
 nba_trb_ast <- nba_cluster %>%
   ggplot(aes(x = trb, y = ast,
@@ -461,8 +464,9 @@ nba_trb_ast <- nba_cluster %>%
   theme(legend.position = "right") +
   labs(x = "Total rebounds",
        y = "Assists",
+       title = "NBA",
        fill = "cluster",
-       colour = "NBA Archetypes")
+       colour = "Archetypes")
 
 wnba_trb_ast + nba_trb_ast + plot_layout(ncol = 2)
 ```
@@ -486,8 +490,9 @@ wnba_usage <- wnba_cluster %>%
   theme(legend.position = "right") +
   labs(x = "Usage %",
        y = "PER",
+       title = "WNBA",
        fill = "cluster",
-       colour = "WNBA Archetypes") 
+       colour = "Archetypes") 
 
 nba_usage <- nba_cluster %>%
   ggplot(aes(x = usgpercent, y = per,
@@ -498,8 +503,9 @@ nba_usage <- nba_cluster %>%
   theme(legend.position = "right") +
   labs(x = "Usage %",
        y = "PER",
+       title = "NBA",
        fill = "cluster",
-       colour = "NBA Archetypes")
+       colour = "Archetypes")
 
 wnba_usage + nba_usage + plot_layout(ncol = 2)
 ```
@@ -523,8 +529,9 @@ wnba_ws <- wnba_cluster %>%
   theme(legend.position = "right") +
   labs(x = "Offensive Win Share",
        y = "Defensive Win Share",
+       title = "WNBA",
        fill = "cluster",
-       colour = "WNBA Archetypes") 
+       colour = "Archetypes") 
 
 nba_ws <- nba_cluster %>%
   ggplot(aes(x = ows, y = dws,
@@ -535,8 +542,9 @@ nba_ws <- nba_cluster %>%
   theme(legend.position = "right") +
   labs(x = "Offensive Win Share",
        y = "Defensive Win Share",
+       title = "NBA",
        fill = "cluster",
-       colour = "NBA Archetypes")
+       colour = "Archetypes")
 
 wnba_ws + nba_ws + plot_layout(ncol = 2)
 
@@ -564,7 +572,7 @@ wnba_cluster %>%
   coord_flip() +
   theme_bw() +
   theme(strip.background = element_blank(),
-        plot.title = element_text(hjust = 0.5, size = 11)) + 
+        plot.title = element_text(hjust = 0.5, size = 10)) + 
   facet_wrap(~ cluster,
              scales = 'free_y', nrow = 4) + 
   labs(y = "Uncertainty",
@@ -583,7 +591,7 @@ nba_cluster %>%
   coord_flip() +
   theme_bw() +
   theme(strip.background = element_blank(),
-        plot.title = element_text(hjust = 0.5, size = 11)) + 
+        plot.title = element_text(hjust = 0.5, size = 10)) + 
   facet_wrap(~ cluster,
              scales = 'free_y', nrow = 4) + 
   labs(y = "Uncertainty",
@@ -597,7 +605,7 @@ nba_cluster %>%
 
 ## 2. WNBA vs NBA Player Comparison Based On Playstyle {.tabset .tabset-dropdown}
 
-The Gaussian Mixture Model built using NBA players using 8 playstyle variables produced 7 clusters. The Adjusted Rand Index with the performance based NBA clusters was 0.248. As part of the comparison process, the uncertainty for each player was also calculated. As previously mentioned, uncertainty is defined as $1 - max(p_i)$, where $p_i$, in this case, are the corresponding probabilities for a player to be assigned to each of the 7 clusters. The 3 WNBA and NBA players with the highest uncertainty for each cluster are shown below (2021 season only). 
+The Gaussian Mixture Model built with NBA players using 8 playstyle variables produced 7 clusters. The Adjusted Rand Index with the performance based NBA clusters was 0.248. As part of the comparison process, the uncertainty for each player was also calculated. The 3 WNBA and NBA players with the highest uncertainty for each cluster are shown below (2021 season only). 
 
 
 ```{r, uncertainty plots, echo = FALSE, message = FALSE, warning=FALSE }
@@ -654,7 +662,8 @@ nba_playstyle_clusters %>%
 
 **Table of comparisons for 3 example players:**
 
-```{r, echo = FALSE, warning=FALSE, message = FALSE}
+![](comp_table.png)
+```{r, echo = FALSE, warning=FALSE, message = FALSE, include = FALSE}
 library(gt)
 library(DT)
 comps <- read_csv("data/wnba21_nba22_comps_links.csv")
@@ -670,7 +679,7 @@ colnames(demo_comps)[c(1, seq(2, 8, by = 2))] <- c("WNBA Player",
                                                    "NBA Comp #3", 
                                                    "NBA Comp #4")
 
-demo_comps %>%
+comp_table <- demo_comps %>%
   mutate(across(.cols = starts_with("distance"), .fns = ~round(., digits = 3))) %>%
   rename(`Distance 1` = "distance",
          `Distance 2` = "distance2",
@@ -705,11 +714,11 @@ demo_comps %>%
 # Discussion:
 
 -   The sample player comparisons listed in the table above do seem to pass the ‘eye test’. For example, Allie Quigley is known as a sharpshooter, very similar to her ‘closest’ NBA comparison Payton Pritchard
--   The 10 archetypes defined using results-based statistics suggest that NBA and WNBA have nearly identical archetypes
--   The WNBA and NBA clustering with performance-based variables produced 5 clusters each, while the NBA clustering with playstyle variables produced 7 variables. 
--   While it is difficult to measure results of unsupervised learning such as GMMs, the Adjusted Rand Index (ARI) can compare two classifications (such as the NBA performance based and NBA playstyle based clustering). The ARI of 0.248 between these two classifications suggests that they were not completely random partitions, but that they were far from identical clusters. 
-
--   MORE TO BE ADDED LATER
+-   The 10 archetypes defined using performance-based statistics suggest that NBA and WNBA are nearly identical 
+    - However, it is important to note that the nature/style of the games played in the 2 leagues are still very different
+-   The WNBA and NBA clustering with performance-based variables produced 5 clusters each, while the NBA clustering with playstyle variables produced 7 variables
+    - This could be a result of variation among the observations in the overall data but could also suggest there could be multiple distinct playstyles that contribute to a single performance-based archetype
+-   While it is difficult to measure results of unsupervised learning such as GMMs, the Adjusted Rand Index (ARI) can compare two classifications (such as the NBA performance based and NBA playstyle based clustering). The ARI of 0.248 between these two classifications suggests that they were not completely random partitions, but that they were far from identical clusters
 
 ### Limitations
 
@@ -718,20 +727,18 @@ demo_comps %>%
 -   There were inconsistencies across seasons (comparing 2021 WNBA players to 2022 NBA players)
 -   Calculating the Euclidean distance of cluster probabilities could lead to some comparisons that are considered erroneous
       -   Euclidean distance is not designed for probability vectors
--   Trying to compare by playstyle across the WNBA and NBA is a flawed premise because the general style of play is different (e.g lob threats in the NBA)
-
-
-### Further work
-
--   Use different distance metric designed to work with probability vectors - SEE RONS REC
--   We could try to evaluate our clusters/comparisons to other people’s
-      -   Finding ways to assess the work
--   REVERSE REVERSE
-      -   Train on WNBA, see how NBA players are compared
--   Perform player clustering again once 2022 WNBA season is complete
+-   Trying to compare by playstyle across the WNBA and NBA is a flawed premise because the general style of play is different (e.g. lob threats in the NBA)
 
 
 ### Next steps
+
+-   Employ a different distance metric such as the Wasserstein metric, which is designed to work with probability distributions
+-   Assess the work here by comparing it to other public WNBA/NBA archetypes or clustering results
+-   Reverse the player comparison process by training the model on WNBA data first and subsequently determining comparisons for NBA players
+-   Perform player clustering again once 2022 WNBA season is complete
+
+
+### Future work
 
 -   Produce a metric, regularized adjusted plus-minus (RAPM), to measure attributes and provide better evaluations of WNBA players
     -   Utilize RAPM to create future projections of players
@@ -757,3 +764,6 @@ We would like to first express our gratitude toward Carnegie Mellon's Statistics
 [3] <https://niemanreports.org/articles/covering-womens-sports/>
 
 [4] <https://www.basketball-reference.com/wnba/years/2022_per_game.html>
+
+
+
