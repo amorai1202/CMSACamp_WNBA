@@ -26,15 +26,15 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introduction:
 
-Over the past decade, with the growing influence of social media and heightened popularity of global stars, interest in women's sports has skyrocketed. However, even with the appearance of high-profile campaigns for equity in sports^1^, it has nonetheless been difficult to cultivate an audience and build a market for women's sports when they receive minimal media coverage compared to their male counterparts^2^. Although major tournaments, such as the WNBA Finals, are strong pulls for fans, the lack of nationally televised games and limited marketing budgets to showcase the players throughout the year has been a barrier for sports fans --- especially established NBA fans --- to consistently engage with the WNBA even when they're interested. Furthermore, although we have seen how statistics can fuel sports passion and storytelling, it was only recently that data and advanced statistics for the WNBA became easily accessible to the public^3^. Therefore, we seek to not only promote sustained fan engagement and interactions with the WNBA, we hope to also provide better and more accessible statistics of the players as well.
+Over the past decade, with the growing influence of social media and heightened popularity of global stars, interest in women's sports has skyrocketed. However, even with the appearance of high-profile campaigns for equity in sports^1^, it has nonetheless been difficult to cultivate an audience and build a market for women's sports when they receive minimal media coverage compared to their male counterparts^2^. Although major tournaments, such as the WNBA Finals, are strong pulls for sports enthusiasts, the lack of nationally televised games and limited marketing budgets to showcase the players throughout the year has been a barrier for sports fans --- especially established NBA fans --- to consistently engage with the WNBA even when they are interested. Furthermore, although we have seen how statistics can fuel sports passion and storytelling, it was only recently that data and advanced statistics for the WNBA became easily accessible to the public^3^. Therefore, we seek to not only provide more convenient and accessible information on the WNBA players, but to also promote sustained fan engagement and interactions with the league as well.
 
 **Our project aims to make the following contributions, which will be displayed in a public facing Shiny App:**
 
-> 1.  Develop archetypes of current WNBA players based on each player's tendencies, abilities, and overall statistics
+> 1.  Develop archetypes of current WNBA players based on each player's abilities and overall result/performance-based statistics
 >     -   Conduct archetype exploration on NBA players using the same variables to discover similarities and differences in the type of players between the respective leagues
 
 > 2.  Draw comparisons between WNBA players to NBA players
->     -   Each WNBA player (that has played significant minutes/games) will be matched with 3-5 similar NBA players based SOLELY on their playstyle
+>     -   Each WNBA player (that has played significant minutes/games) will be matched with 3-5 similar NBA players based SOLELY on their tendencies/playstyle
 
 Ultimately, we believe that labeling each WNBA player with an archetype and developing an NBA player comparison can boost year-round engagement and bring the WNBA into the spotlight and keep them there for years to come.
 
@@ -48,7 +48,7 @@ To define player archetypes in the WNBA and compare WNBA players to NBA players,
     -   Points, rebounds, assists
     -   Turnovers, field goals made, field goals attempted
 -   **Advanced statistics** designed to demonstrate player tendencies and efficiency such as:
-    -   PER, Usage Rate, Win Shares
+    -   PER (player efficiency rating), Usage Rate, Win Shares
 -   **Play by play statistics** such as:
     -   Type of turnover (bad pass, lost ball)
     -   Foul information (fouls drawn, fouls committed)
@@ -207,7 +207,7 @@ wnba_pos %>%
        )
 ```
 
-**Assist & Block percentage:**
+**Assist & Block Percentage:**
 
 ```{r, echo = FALSE, message = FALSE, warning=FALSE}
 
@@ -320,8 +320,6 @@ The full descriptions of the archetypes are displayed below:
 
 ### WNBA
 
-*5 clusters:*
-
 1.  RESERVES
     -   Benchwarmers
         -   High turnovers & personal fouls
@@ -344,7 +342,7 @@ The full descriptions of the archetypes are displayed below:
         -   Defensive versatility
         -   Highest usage
         -   Examples: A'ja Wilson, Breanna Stewart
-5.  SHOOTING THREATS
+5.  *SHOOTING THREATS*
     -   Sharpshooter
         -   High 3 point attempts and percentage
         -   Low rebounds
@@ -356,24 +354,22 @@ The full descriptions of the archetypes are displayed below:
 
 ### NBA
 
-*5 clusters:*
-
-1.  TRADITIONAL BIGS
+1.  RESERVES
+    -   Benchwarmers
+        -   High turnovers & personal fouls
+        -   Lowest offensive rating, offensive win shares and defensive win shares
+        -   Examples: Luke Kornet, Frank Ntilikina
+2.  TRADITIONAL BIGS
     -   Rebounder & rim-protector
         -   High total and offensive rebounds
         -   High close distance shots/layups
         -   High personal fouls
         -   Examples\*: Rudy Gobert, DeAndre Jordan
-2.  FACILITATORS/SHOOTERS
+3.  FACILITATORS/SHOOTERS
     -   Ball handler
         -   High assists, low rebounds
         -   High 3 point attempts and percentage
         -   Examples: Duncan Robinson, Buddy Hield
-3.  ROLEPLAYERS
-    -   Versatile wings
-        -   Reliable shooters
-        -   Low usage
-        -   Examples: Robert Covington, Royce O'Neale
 4.  PRIMARY SCORERS/INITIATORS
     -   Superstars
         -   Offensive skilled self-creators
@@ -381,11 +377,11 @@ The full descriptions of the archetypes are displayed below:
         -   Highest points, assists, usage, free throw attempts
         -   Highest defensive and offensive win share
         -   Examples: Giannis Antetokounmpo, Stephen Curry
-5.  RESERVES
-    -   Benchwarmers
-        -   High turnovers & personal fouls
-        -   Lowest offensive rating, offensive win shares and defensive win shares
-        -   Examples: Luke Kornet, Frank Ntilikina
+5.  *ROLEPLAYERS*
+    -   Versatile wings
+        -   Reliable shooters
+        -   Low usage
+        -   Examples: Robert Covington, Royce O'Neale
 
 \*Player examples are from the 2021 season
 
@@ -416,7 +412,7 @@ wnba_pts_x3pa <- wnba_cluster %>%
   ggthemes::scale_color_colorblind() +
   theme_bw() +
   theme(legend.position = "right") +
-  labs(x = "Points per 100 possessions",
+  labs(x = "Points",
        y = "3 point attempts",
        fill = "cluster",
        colour = "WNBA Archetypes") 
@@ -428,7 +424,7 @@ nba_pts_x3pa <- nba_cluster %>%
   ggthemes::scale_color_colorblind() +
   theme_bw() +
   theme(legend.position = "right") +
-  labs(x = "Points per 100 possessions",
+  labs(x = "Points",
        y = "3 point attempts",
        fill = "cluster",
        colour = "NBA Archetypes")
