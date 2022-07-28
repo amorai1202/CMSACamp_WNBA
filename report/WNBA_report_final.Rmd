@@ -2,7 +2,7 @@
 title: "Is Breanna Stewart the Lebron James of the WNBA? Developing WNBA and NBA Archetypes and Playstyle Comparisons"
 author: 
  - Amor Ai^[Carnegie Mellon University, amorai@cmu.edu], Mykalyster Homberg^[Harvard University, mhombergbertley@college.harvard.edu], Andrew Noecker^[St. Olaf College, noecke2@stolaf.edu]
-date: "`r format(Sys.time(), '%B %d, %Y')`"
+date: "July 29, 2022"
 header-includes:
    - \usepackage[default]{sourcesanspro}
    - \usepackage[T1]{fontenc}
@@ -21,6 +21,10 @@ editor_options:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+<p style="text-align: center;"> 
+[Shiny App](https://qtwxlt-mykalyster-homberg.shinyapps.io/wnbapp/)
+</p> 
 
 ------------------------------------------------------------------------
 
@@ -596,14 +600,14 @@ nba_cluster %>%
              scales = 'free_y', nrow = 4) + 
   labs(y = "Uncertainty",
        x = "Player",
-       title = "2021 NBA players with highest uncertainty when clustering by perforamance variables")
+       title = "2021 NBA players with highest uncertainty when clustering by performance variables")
 
 
 ```
 
 ------------------------------------------------------------------------
 
-## 2. WNBA vs NBA Player Comparison Based On Playstyle {.tabset .tabset-dropdown}
+## 2. WNBA vs NBA Player Comparison Based on Playstyle {.tabset .tabset-dropdown}
 
 The Gaussian Mixture Model built with NBA players using 8 playstyle variables produced 7 clusters. The Adjusted Rand Index with the performance based NBA clusters was 0.248. As part of the comparison process, the uncertainty for each player was also calculated. The 3 WNBA and NBA players with the highest uncertainty for each cluster are shown below (2021 season only). 
 
@@ -694,6 +698,21 @@ comp_table <- demo_comps %>%
 
 ::: {style="margin-bottom:50px;"}
 :::
+
+**Shiny app examples for the 3 players in the table above:**
+
+### Kelsey Plum
+
+![](K. Plum Profile.png)
+
+### Allie Quigley
+
+![](A. Quigley Profile.png)
+
+### Breanna Stewart
+![](B. Stewart Profile.png)
+
+## 
 
 #### The link to our public-facing app is attached below:
 
