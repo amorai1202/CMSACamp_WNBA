@@ -747,7 +747,7 @@ Based on our results, not exactly. Lebron James is not one of her top 4 comparis
 
 # Acknowledgements:
 
-We would like to first express our gratitude toward Carnegie Mellon's Statistics & Data Science Department for providing us a great opportunity to complete a project on sports analytics. In particular, this work would not have been possible without the valuable guidance and support of Dr. Ron Yurko, the lead instructor and director of CMSAC, as well as Maxsim Horowitz, senior data analyst for the Atlanta Hawks, for advising our project. We are also grateful to all of those with whom we have had the pleasure to work during this and other related projects, including our fellow students and teaching assistants.
+We would like to first express our gratitude toward Carnegie Mellon's Statistics & Data Science Department for providing us a great opportunity to complete a project on sports analytics. In particular, this work would not have been possible without the valuable guidance and support of Dr. Ron Yurko, the lead instructor and director of CMSACamp, as well as Maxsim Horowitz, senior data analyst for the Atlanta Hawks, for advising our project. We are also grateful to all of those with whom we have had the pleasure to work during this and other related projects, including our fellow students and teaching assistants.
 
 ------------------------------------------------------------------------
 
