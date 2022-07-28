@@ -9,3 +9,5 @@ Authors: [Andrew Noecker](https://github.com/noecke2), [Mykalyster Homberg](http
 Project mentor: Max Horowitz (Data Scientist, Atlanta Hawks)
 
 Final Report can be found [here](https://noecke2.github.io/CMSAC-22-Basketball/report/WNBA_report_final.html)
+
+Program dates: 6/6/22 - 7/29/22
