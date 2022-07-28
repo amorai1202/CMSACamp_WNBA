@@ -198,4 +198,3 @@ nba_wnba_combined %>% filter(player_season %in% c("Sue Bird_2021", "Quincy Acy_2
 
 plot(nba_mclust_std)
 
-  

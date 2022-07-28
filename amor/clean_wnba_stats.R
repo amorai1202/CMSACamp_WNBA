@@ -6,9 +6,10 @@ wnba_all_stats_raw <- read_csv("data/wnba_all_stats.csv") #1997-2022
 
 # 2018-2021 seasons
 wnba_seasons <- wnba_all_stats_raw %>% 
-  select(-contains("link")) %>%  #remove link column
+  # select(-contains("link")) %>%  #remove link column
   mutate(mpg = mp/g) %>%  #add mpg column
-  filter(grepl("2018|2019|2020|2021", season)) 
+  filter(grepl("2018|2019|2020|2021", season))
+
 
 #ECDF plot of mpg:
 
@@ -27,11 +28,12 @@ wnba_all_stats_clean <- wnba_seasons %>%
   filter(tm != "TOT") %>%  #remove TOT rows
   group_by(player, season) %>%
   filter(mp == max(mp)) %>% 
+  ungroup() %>%
 #if a player played with multiple teams over the course of a season, kept row with most mp 
   filter(mpg > 10, g > 5)
 
 # WRITE CSV
-write_csv(wnba_all_stats_clean, "data/wnba_all_stats_clean2.csv")
+write_csv(wnba_all_stats_clean, "data/wnba_all_stats_clean.csv")
 
 
 

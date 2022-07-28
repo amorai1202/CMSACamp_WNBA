@@ -1,3 +1,9 @@
+# PURPOSE: Fix Shiny App Issues Where 2022 WNBA players aren't in model
+
+library(mclust)
+library(tidyverse)
+
+
 # PURPOSE: Remodel GMM using standardized values
 
 
@@ -88,13 +94,28 @@ table("Cluster" = nba_mclust_std2$classification,
 # Loading WNBA Data -------------------------------------------------------
 
 wnba_clean <- read_csv("data/wnba_all_stats_clean.csv")
+wnba_clean18_22 <- read_csv("data/wnba_all_stats_clean18_22.csv")
 
-wnba_select_stats <- wnba_clean %>%
+wnba_shooting <- read_csv("data/wnba_shooting.csv")
+
+temp <- wnba_shooting %>%
+  select(player, season, tm, distance)
+
+wnba_clean18_22 <- wnba_clean18_22 %>%
+  left_join(test, by = c("player", "season", "tm")) %>% 
+  select(-distance.x) %>% 
+  rename(distance = 'distance.y')
+
+
+
+
+wnba_select_stats <- wnba_clean18_22 %>%
   select(player, tm, season, pos, g, mp, gs, # Basic info
          fga, x3pa, fta, trb, # Per 100 poss statistics
          astpercent, stlpercent, blkpercent,  # Advanced rate statistics
          distance # Shot location info (distance, proportion of shots from each distance range)
   )
+
 
 # SCALING WNBA 
 wnba_standard_stats <- wnba_select_stats %>%
@@ -130,7 +151,6 @@ wnba_model_results <- wnba_standard_stats %>%
                                 prob6,
                                 prob7))
 
-# write_csv(wnba_model_results, "data/wnba_playstyle_clusters.csv")
 
 # Appending NBA Model Results ---------------------------------------------
 
@@ -153,7 +173,6 @@ nba_model_results <- nba_standard_stats %>%
                                 prob6,
                                 prob7))
 
-# write_csv(nba_model_results, "data/nba_playstyle_clusters.csv")
 
 # Prob Distance Matrix ----------------------------------------------------
 
@@ -199,15 +218,15 @@ long_dist_matrix %>%
   arrange(player1)
 
 
+# WNBA 2022 Seasons Compared to NBA 2022 Seasons
 
-
-wnba21_nba22_comps <- long_dist_matrix %>%
+wnba22_nba22_comps <- long_dist_matrix %>%
   mutate(league2 = rep(nba_wnba_combined$league, times = nrow(nba_wnba_combined)),
          pred_class = rep(nba_wnba_combined$pred_class, each = nrow(nba_wnba_combined))) %>%
   filter(player1 != player2) %>%
   filter(league == "WNBA",
          league2 == "NBA",
-         str_detect(player1, "2021"),
+         str_detect(player1, "2022"),
          str_detect(player2, "2022")) %>%
   group_by(player1) %>%
   slice_min(distance, n = 5) %>% 
@@ -215,7 +234,8 @@ wnba21_nba22_comps <- long_dist_matrix %>%
   separate(player1, c("wnba_player", "wnba_season"), sep = "_") %>% 
   separate(player2, c("nba_player", "nba_season"), sep = "_")
 
-wide_wnba21_nba22_comps <- wnba21_nba22_comps %>%
+
+wide_wnba22_nba22_comps <- wnba22_nba22_comps %>%
   group_by(wnba_player) %>%
   slice_min(distance, n = 1) %>%
   ungroup()
@@ -223,27 +243,27 @@ wide_wnba21_nba22_comps <- wnba21_nba22_comps %>%
 
 # Making dataset wider so player1 player 2 etc are their own respective columns
 for (i in 2:5) {
-  player_list <- wnba21_nba22_comps$nba_player[seq(i, nrow(wnba21_nba22_comps), by = 5)]
-  distance_list <- wnba21_nba22_comps$distance[seq(i, nrow(wnba21_nba22_comps), by = 5)]
-  wide_wnba21_nba22_comps <- wide_wnba21_nba22_comps %>%
+  player_list <- wnba22_nba22_comps$nba_player[seq(i, nrow(wnba22_nba22_comps), by = 5)]
+  distance_list <- wnba22_nba22_comps$distance[seq(i, nrow(wnba22_nba22_comps), by = 5)]
+  wide_wnba22_nba22_comps <- wide_wnba22_nba22_comps %>%
     mutate(nba_player_x = player_list,
            distance_x = distance_list) 
   
-  colnames(wide_wnba21_nba22_comps)[(ncol(wide_wnba21_nba22_comps)-1):ncol(wide_wnba21_nba22_comps)] <- c(paste0("nba_player", i), paste0("distance", i))
+  colnames(wide_wnba22_nba22_comps)[(ncol(wide_wnba22_nba22_comps)-1):ncol(wide_wnba22_nba22_comps)] <- c(paste0("nba_player", i), paste0("distance", i))
 }
 
 
 # Trying to get player links into wide dataset for ease of shiny app pictures
-wnba_tmp <- read_csv("data/wnba_all_stats_clean2.csv")
+wnba_tmp <- read_csv("data/wnba_all_stats_clean18_22.csv")
 
 
 # WNBA Links
 
 tmp2 <- wnba_tmp %>% 
-  filter(season == 2021) %>%
+  filter(season == 2022) %>%
   select(player, link, season) %>%
   rename(wnba_player = "player") %>%
-  right_join(wide_wnba21_nba22_comps) %>%
+  right_join(wide_wnba22_nba22_comps) %>%
   rename(wnba_link = "link",
          nba_player1 = "nba_player")
 
@@ -267,38 +287,57 @@ tmp3 <- tmp2 %>%
          nba_link5 = "link")
 
 # ISOLATING IDs
-  
-wide_wnba21_nba22_links <- tmp3 %>%
-    # WNBA PLAYER ID
-    separate(wnba_link, sep = "/", into = c("A", "B", "C", "D", "E"), remove = FALSE) %>%
-    separate(E, sep = "\\.", into = c("wnba_id", "F")) %>%
-    select(-c(A:D), -`F`) %>%
-    #NBA PLAYER 1 ID
-    separate(nba_link1, sep = "/", into = c("A", "B", "C", "D"), remove = FALSE) %>%
-    separate(D, sep = "\\.", into = c("nba_id1", "F")) %>%
-    select(-c(A:C), -`F`) %>%
-    # NBA PLAYER 2 ID
-    separate(nba_link2, sep = "/", into = c("A", "B", "C", "D"), remove = FALSE) %>%
-    separate(D, sep = "\\.", into = c("nba_id2", "F")) %>%
-    select(-c(A:C), -`F`) %>%
-    # NBA PLAYER 3 ID
-    separate(nba_link3, sep = "/", into = c("A", "B", "C", "D"), remove = FALSE) %>%
-    separate(D, sep = "\\.", into = c("nba_id3", "F")) %>%
-    select(-c(A:C), -`F`) %>%
-    # NBA PLAYER 4 ID
-    separate(nba_link4, sep = "/", into = c("A", "B", "C", "D"), remove = FALSE) %>%
-    separate(D, sep = "\\.", into = c("nba_id4", "F")) %>%
-    select(-c(A:C), -`F`) %>%
-    # NBA PLAYER 5 ID
-    separate(nba_link5, sep = "/", into = c("A", "B", "C", "D"), remove = FALSE) %>%
-    separate(D, sep = "\\.", into = c("nba_id5", "F")) %>%
-    select(-c(A:C), -`F`) 
+
+wide_wnba22_nba22_links <- tmp3 %>%
+  # WNBA PLAYER ID
+  separate(wnba_link, sep = "/", into = c("A", "B", "C", "D", "E"), remove = FALSE) %>%
+  separate(E, sep = "\\.", into = c("wnba_id", "F")) %>%
+  select(-c(A:D), -`F`) %>%
+  #NBA PLAYER 1 ID
+  separate(nba_link1, sep = "/", into = c("A", "B", "C", "D"), remove = FALSE) %>%
+  separate(D, sep = "\\.", into = c("nba_id1", "F")) %>%
+  select(-c(A:C), -`F`) %>%
+  # NBA PLAYER 2 ID
+  separate(nba_link2, sep = "/", into = c("A", "B", "C", "D"), remove = FALSE) %>%
+  separate(D, sep = "\\.", into = c("nba_id2", "F")) %>%
+  select(-c(A:C), -`F`) %>%
+  # NBA PLAYER 3 ID
+  separate(nba_link3, sep = "/", into = c("A", "B", "C", "D"), remove = FALSE) %>%
+  separate(D, sep = "\\.", into = c("nba_id3", "F")) %>%
+  select(-c(A:C), -`F`) %>%
+  # NBA PLAYER 4 ID
+  separate(nba_link4, sep = "/", into = c("A", "B", "C", "D"), remove = FALSE) %>%
+  separate(D, sep = "\\.", into = c("nba_id4", "F")) %>%
+  select(-c(A:C), -`F`) %>%
+  # NBA PLAYER 5 ID
+  separate(nba_link5, sep = "/", into = c("A", "B", "C", "D"), remove = FALSE) %>%
+  separate(D, sep = "\\.", into = c("nba_id5", "F")) %>%
+  select(-c(A:C), -`F`) 
 
 # write_csv(wide_wnba21_nba22_links, "data/wnba21_nba22_comps_links.csv")
 
-  
 
-    
+# Trying to address issue where 2022 players don't have a comp in Shiny app
+# FIX:
+#
+# Re run model and comparisons with 2022 data included (done above)
+# Now, ONLY add in players to comps dataset who didn't have a 2021 comp
+
+comps_21_22 <- read_csv("data/wnba21_nba22_comps_links.csv")
+
+
+
+only_22 <- wide_wnba22_nba22_links %>%
+  filter(!wnba_player %in% comps_21_22$wnba_player) %>%
+  mutate(wnba_season = as.numeric(wnba_season),
+         nba_season = as.numeric(nba_season))
+
+
+# Full set of available players to model
+all_wnba_comps_nba22 <- bind_rows(comps_21_22, only_22)
+
+
+write_csv(all_wnba_comps_nba22, "data/all_comps_nba22.csv")
 
 
 
