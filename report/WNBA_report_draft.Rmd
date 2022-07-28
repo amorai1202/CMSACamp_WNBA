@@ -695,19 +695,11 @@ comp_table <- demo_comps %>%
 ::: {style="margin-bottom:50px;"}
 :::
 
-**Initial shiny app examples for the 3 players in the table above:**
+#### The link to our public-facing app is attached below:
 
-### Kelsey Plum
-
-![](kelsey_plum_demo.png)
-
-### Allie Quigley
-
-![](allie_quigley_demo.png)
-
-### Breanna Stewart
-
-![](breanna_stewart_demo.png)
+<p style="text-align: center;"> 
+[Shiny App](https://qtwxlt-mykalyster-homberg.shinyapps.io/wnbapp/)
+</p> 
 
 ----
 
@@ -727,7 +719,7 @@ Based on our results, not exactly. Lebron James is not one of her top 4 comparis
 ### Limitations
 
 -   Using a Gaussian Mixture Model makes the assumption that each component is Gaussian/multivariate normal distribution
--   The process of defining archetypes following clustering was not precise: it relied mostly on a combination of cluster averages and knowledge of basketball
+-   The process of defining archetypes following clustering was not clear-cut: it relied mostly on a combination of cluster averages and knowledge of basketball
 -   There were inconsistencies across seasons (comparing 2021 WNBA players to 2022 NBA players)
 -   Calculating the Euclidean distance of cluster probabilities could lead to some comparisons that are considered erroneous
       -   Euclidean distance is not designed for probability vectors
