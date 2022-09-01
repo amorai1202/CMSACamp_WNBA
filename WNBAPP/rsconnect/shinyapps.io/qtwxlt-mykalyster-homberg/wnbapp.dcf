@@ -1,0 +1,14 @@
+name: wnbapp
+title:
+username:
+account: qtwxlt-mykalyster-homberg
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 6703465
+bundleId: 6142492
+url: https://qtwxlt-mykalyster-homberg.shinyapps.io/wnbapp/
+when: 1659023000.75369
+lastSyncTime: 1659023000.75371
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: Important shiny app notes.R
