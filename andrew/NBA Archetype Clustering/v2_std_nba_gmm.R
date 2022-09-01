@@ -130,6 +130,7 @@ wnba_model_results <- wnba_standard_stats %>%
                                 prob6,
                                 prob7))
 
+# write_csv(wnba_model_results, "data/wnba_playstyle_clusters.csv")
 
 # Appending NBA Model Results ---------------------------------------------
 
@@ -152,6 +153,7 @@ nba_model_results <- nba_standard_stats %>%
                                 prob6,
                                 prob7))
 
+# write_csv(nba_model_results, "data/nba_playstyle_clusters.csv")
 
 # Prob Distance Matrix ----------------------------------------------------
 
@@ -252,7 +254,7 @@ nba_links <- nba_all_stats_filtered %>%
   filter(season == 2022) %>% 
   select(player, link)
 
-tmp3<- tmp2 %>%
+tmp3 <- tmp2 %>%
   left_join(nba_links, by = c("nba_player1" = "player")) %>% 
   left_join(nba_links, by = c("nba_player2" = "player")) %>%
   left_join(nba_links, by = c("nba_player3" = "player")) %>%
@@ -264,6 +266,7 @@ tmp3<- tmp2 %>%
          nba_link4 = "link.y.y",
          nba_link5 = "link")
 
+# ISOLATING IDs
   
 wide_wnba21_nba22_links <- tmp3 %>%
     # WNBA PLAYER ID
@@ -291,7 +294,7 @@ wide_wnba21_nba22_links <- tmp3 %>%
     separate(D, sep = "\\.", into = c("nba_id5", "F")) %>%
     select(-c(A:C), -`F`) 
 
-write_csv(wide_wnba21_nba22_links, "data/wnba21_nba22_comps_links.csv")
+# write_csv(wide_wnba21_nba22_links, "data/wnba21_nba22_comps_links.csv")
 
   
 

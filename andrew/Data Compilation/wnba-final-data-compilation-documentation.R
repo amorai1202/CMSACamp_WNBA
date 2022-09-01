@@ -46,6 +46,8 @@ wnba_all_stats <- wnba_per100_stats %>%
   select(1, 2, 28, 3:26, 29:90, 27)
 
 
+
+
 #### DOCUMENTATION
 
 # Columns 1-27 are per 100 stats (3pa, 2pa, etc) and shooting percentages
